@@ -11,7 +11,7 @@
 body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
 
 /* === TOP BAR === */
-.top-bar{padding:16px 24px;background:linear-gradient(135deg,rgba(108,92,231,.08),rgba(0,210,168,.04));border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:16px;flex-shrink:0}
+.top-bar{padding:16px 24px;background:linear-gradient(135deg,rgba(108,92,231,.08),rgba(0,210,168,.04));border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:16px;flex-shrink:0;position:relative}
 .top-bar h1{font-size:19px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .top-bar h1 span{font-size:12px;font-weight:400;color:var(--text2);margin-left:8px}
 .nav-link{padding:6px 14px;border-radius:16px;font-size:12px;font-weight:500;border:1px solid rgba(255,255,255,.08);color:var(--text2);text-decoration:none;transition:all .2s;cursor:pointer}
@@ -180,6 +180,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   <a class="nav-link" href="catalog.html">📋 AI 도구 카탈로그</a>
   <a class="nav-link" href="priority.html">🎯 AI 워크 4사분면 분석</a>
   <div class="user-badge" id="userBadge" onclick="changeUser()">👤 <span id="userName">사용자</span></div>
+  <span style="font-size:9px;color:var(--text3);opacity:.5;position:absolute;bottom:3px;right:24px">Designed &amp; Developed by ETC MKT 이현우</span>
 </div>
 
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
@@ -341,7 +342,6 @@ function renderList(){
       <div class="wf-meta">
         ${w.major?`<span class="tag" style="background:rgba(108,92,231,.08);color:var(--accent2)">${w.major}</span>`:''}
         ${w.mid?`<span class="tag" style="background:rgba(0,210,168,.06);color:var(--green)">${w.mid}</span>`:''}
-        <span class="tag tag-cat">${w.category}</span>
         <span class="tag tag-diff">${w.difficulty}</span>
         <span>👤 ${w.author||'미지정'}</span>
         <span>${w.createdAt||''}</span>
@@ -546,7 +546,7 @@ function renderMain(){
 
   const majorBadge=w.major?`<span class="badge" style="background:rgba(108,92,231,.08);color:var(--accent2);border:1px solid rgba(108,92,231,.2)">${w.major}</span>`:'';
   const midBadge=w.mid?`<span class="badge" style="background:rgba(0,210,168,.06);color:var(--green);border:1px solid rgba(0,210,168,.15)">${w.mid}</span>`:'';
-  let html=`<div class="main-header"><div class="info-row">${majorBadge}${midBadge}<span class="badge badge-cat">${w.category}</span><span class="badge badge-time">⏱ ${w.time}</span><span class="badge badge-diff">📈 ${w.difficulty}</span><span class="badge badge-author">👤 ${w.author||'미지정'} · ${w.createdAt||''}</span>${ef}${appBadges}</div><div class="main-actions"><button class="btn" onclick="addStep()">+ 단계</button><button class="btn" onclick="addTool()">+ 도구 행</button><button class="btn" onclick="toggleShare()">📤 공유</button></div></div>`;
+  let html=`<div class="main-header"><div class="info-row">${majorBadge}${midBadge}<span class="badge badge-time">⏱ ${w.time}</span><span class="badge badge-diff">📈 ${w.difficulty}</span><span class="badge badge-author">👤 ${w.author||'미지정'} · ${w.createdAt||''}</span>${ef}${appBadges}</div><div class="main-actions"><button class="btn" onclick="addStep()">+ 단계</button><button class="btn" onclick="addTool()">+ 도구 행</button><button class="btn" onclick="toggleShare()">📤 공유</button></div></div>`;
 
   html+=`<div class="matrix-wrap">`;
   // Matrix
