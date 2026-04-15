@@ -192,6 +192,17 @@ window.sharedSave=async function(k,d){
       var merged=saveMerge(k,cloudData,remote);
       await cW(b,merged);
       lastSaveHash[k]=JSON.stringify(merged);
+      // merged에 서버 신규 항목이 포함되었으면 로컬+UI 갱신
+      if(merged.length>cloudData.length){
+        var localIds={};
+        d.forEach(function(w){localIds[w.id]=true});
+        var newItems=merged.filter(function(w){return !localIds[w.id]});
+        if(newItems.length>0){
+          var updated=d.concat(newItems);
+          localStorage.setItem(k,JSON.stringify(updated));
+          if(cb[k]) cb[k](updated);
+        }
+      }
     } else {
       // 객체(tm_custom 등): 서버 것과 합쳐서 저장
       var remote=await cR(b);
@@ -204,16 +215,6 @@ window.sharedSave=async function(k,d){
       }
     }
     lastSaveTime[k]=Date.now();
-    if(isArr && merged && merged.length>cloudData.length){
-      var localIds={};
-      d.forEach(function(w){localIds[w.id]=true});
-      var newItems=merged.filter(function(w){return !localIds[w.id]});
-      if(newItems.length>0){
-        var updated=d.concat(newItems);
-        localStorage.setItem(k,JSON.stringify(updated));
-        if(cb[k]) cb[k](updated);
-      }
-    }
   }catch(e){
     try{await cW(b,cloudData);lastSaveTime[k]=Date.now()}catch(e2){}
   }
