@@ -233,7 +233,7 @@ const ADMIN='이현우';
 let currentUser=localStorage.getItem('wf_user')||'';
 
 function save(){sharedSave('priority_items',items)}
-async function load(){items = await sharedLoad('priority_items', items); sharedOnSync('priority_items', function(data){ items=data; render(); })}
+async function load(){items = await sharedLoad('priority_items', items); sharedOnSync('priority_items', function(data){ if(Array.isArray(data)){items=data; render()} })}
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
 
 /* ===== RENDER ===== */

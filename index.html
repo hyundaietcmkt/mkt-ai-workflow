@@ -238,7 +238,7 @@ async function init(){
   W = await sharedLoad('wf_data', defaults);
   if(!currentUser){document.getElementById('userModal').classList.add('show')}
   else{document.getElementById('userName').textContent=currentUser}
-  sharedOnSync('wf_data', function(data){ W=data; renderList(); renderMain(); });
+  sharedOnSync('wf_data', function(data){ if(Array.isArray(data)){W=data; renderList(); renderMain()} });
   renderList();
   if(W.length){selectWf(W[0].id)}else{showWelcome()}
 }
