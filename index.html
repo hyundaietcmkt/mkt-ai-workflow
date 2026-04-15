@@ -225,17 +225,32 @@ let TM={
 /* ===== CUSTOM TOOLS (클라우드 공유) ===== */
 function saveCustomTools(){
   var custom={};
-  try{var exist=JSON.parse(localStorage.getItem('tm_custom')||'{}')}catch(e){var exist={}}
+  var deleted=getDeletedTools();
+  var delSet={};
+  deleted.forEach(function(t){delSet[t]=true});
   Object.keys(TM).forEach(function(k){
-    if(!TM_DEFAULT[k]) custom[k]=TM[k];
+    if(!TM_DEFAULT[k] && !delSet[k]) custom[k]=TM[k];
   });
-  Object.keys(exist).forEach(function(k){if(!custom[k]) custom[k]=exist[k]});
+  // 삭제된 도구 목록도 서버에 저장 (다른 브라우저와 공유)
+  custom._deleted_tools=deleted;
   sharedSave('tm_custom',custom);
 }
 function loadCustomTools(custom){
   if(!custom||typeof custom!=='object') return;
+  // 서버에 저장된 삭제 이력 반영
+  if(custom._deleted_tools&&Array.isArray(custom._deleted_tools)){
+    var localDel=getDeletedTools();
+    var merged={};
+    localDel.forEach(function(t){merged[t]=true});
+    custom._deleted_tools.forEach(function(t){merged[t]=true});
+    localStorage.setItem('_del_palette',JSON.stringify(Object.keys(merged)));
+  }
+  var deleted=getDeletedTools();
+  var delSet={};
+  deleted.forEach(function(t){delSet[t]=true});
   Object.keys(custom).forEach(function(k){
-    if(!TM[k]) TM[k]=custom[k];
+    if(k==='_deleted_tools') return;
+    if(!TM[k] && !delSet[k]) TM[k]=custom[k];
   });
 }
 function getDeletedTools(){
