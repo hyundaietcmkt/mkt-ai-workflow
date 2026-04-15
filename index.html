@@ -216,9 +216,32 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 <script src="shared-db.js"></script>
 <script>
 /* ===== TOOL META ===== */
-const TM={
+let TM={
 'ChatGPT':{i:'💬',c:'chip-green',u:'https://chat.openai.com'},'Claude':{i:'🟣',c:'chip-purple',u:'https://claude.ai'},'Gemini':{i:'💎',c:'chip-blue',u:'https://gemini.google.com'},'Perplexity':{i:'🔍',c:'chip-blue',u:'https://www.perplexity.ai'},'Canva AI':{i:'🎨',c:'chip-coral',u:'https://www.canva.com'},'Gamma':{i:'📊',c:'chip-amber',u:'https://gamma.app'},'Vrew':{i:'🎬',c:'chip-pink',u:'https://vrew.voyagerx.com'},'HeyGen':{i:'🧑',c:'chip-cyan',u:'https://www.heygen.com'},'Veo':{i:'📹',c:'chip-cyan',u:'https://deepmind.google/technologies/veo/'},'Nano Banana':{i:'🍌',c:'chip-amber',u:'https://gemini.google.com'},'Seedance':{i:'🎥',c:'chip-coral',u:'https://www.seedance.tv'},'미리캔버스':{i:'🖼',c:'chip-amber',u:'https://www.miricanvas.com'},'Midjourney':{i:'🌌',c:'chip-pink',u:'https://www.midjourney.com'},'Claude Code':{i:'⚙️',c:'chip-purple',u:'https://claude.ai/code'},'Figma AI':{i:'✏️',c:'chip-blue',u:'https://www.figma.com'},'Zapier':{i:'⚡',c:'chip-coral',u:'https://zapier.com'},'Make':{i:'🔗',c:'chip-amber',u:'https://www.make.com'},'Notion AI':{i:'📝',c:'chip-green',u:'https://www.notion.so'},'Google Docs':{i:'📄',c:'chip-blue',u:'https://docs.google.com'},'Google Sheets':{i:'📊',c:'chip-green',u:'https://sheets.google.com'},'Google Drive':{i:'💾',c:'chip-amber',u:'https://drive.google.com'},'Slack':{i:'💬',c:'chip-pink',u:'https://slack.com'},'Notion':{i:'📓',c:'chip-green',u:'https://www.notion.so'},'Figma':{i:'🎯',c:'chip-blue',u:'https://www.figma.com'},'Excel':{i:'📗',c:'chip-green',u:'https://www.microsoft.com/excel'},'PowerPoint':{i:'📙',c:'chip-coral',u:'https://www.microsoft.com/powerpoint'},'Google Slides':{i:'📕',c:'chip-amber',u:'https://slides.google.com'},'Airtable':{i:'🗃',c:'chip-cyan',u:'https://airtable.com'}
 };
+
+/* ===== CUSTOM TOOLS (클라우드 공유) ===== */
+function saveCustomTools(){
+  var custom={};
+  try{var exist=JSON.parse(localStorage.getItem('tm_custom')||'{}')}catch(e){var exist={}}
+  Object.keys(TM).forEach(function(k){
+    if(!TM_DEFAULT[k]) custom[k]=TM[k];
+  });
+  Object.keys(exist).forEach(function(k){if(!custom[k]) custom[k]=exist[k]});
+  sharedSave('tm_custom',custom);
+}
+function loadCustomTools(custom){
+  if(!custom||typeof custom!=='object') return;
+  Object.keys(custom).forEach(function(k){
+    if(!TM[k]) TM[k]=custom[k];
+  });
+}
+function scanToolsFromWorkflows(){
+  W.forEach(function(w){
+    if(w.tools){w.tools.forEach(function(t){if(!TM[t])TM[t]={i:'🔧',c:'chip-green',u:''}})}
+  });
+}
+const TM_DEFAULT=JSON.parse(JSON.stringify(TM));
 
 /* ===== DEFAULT DATA ===== */
 const defaults=[
@@ -236,9 +259,13 @@ let currentUser=localStorage.getItem('wf_user')||'';
 /* ===== INIT ===== */
 async function init(){
   W = await sharedLoad('wf_data', defaults);
+  var custom = await sharedLoad('tm_custom', {});
+  loadCustomTools(custom);
+  scanToolsFromWorkflows();
+  sharedOnSync('wf_data', function(data){ if(Array.isArray(data)){W=data; scanToolsFromWorkflows(); renderList(); renderMain()} });
+  sharedOnSync('tm_custom', function(data){ if(data&&typeof data==='object'){loadCustomTools(data); renderMain()} });
   if(!currentUser){document.getElementById('userModal').classList.add('show')}
   else{document.getElementById('userName').textContent=currentUser}
-  sharedOnSync('wf_data', function(data){ if(Array.isArray(data)){W=data; renderList(); renderMain()} });
   renderList();
   if(W.length){selectWf(W[0].id)}else{showWelcome()}
 }
@@ -333,7 +360,7 @@ function delStep(n){const w=gW();if(w.steps.length<=1){toast('최소 1개 필요
 function delTool(n){const w=gW();if(w.tools.length<=1){toast('최소 1개 필요');return}showConfirm(`<b>"${n}"</b> 도구 삭제?`,()=>{w.tools=w.tools.filter(t=>t!==n);delete w.placements[n];saveData();renderMain();toast('삭제됨')})}
 function editStep(o){openEditModal('단계 이름 수정','새 이름',o,n=>{const w=gW();const i=w.steps.indexOf(o);if(i===-1)return;w.steps[i]=n;Object.keys(w.placements).forEach(t=>{w.placements[t]=(w.placements[t]||[]).map(s=>s===o?n:s)});saveData();renderMain();toast('변경됨')})}
 function addStep(){openEditModal('새 단계','이름','',n=>{if(!n)return;gW().steps.push(n);saveData();renderMain();toast('추가됨')})}
-function addTool(){openEditModal('도구 행 추가','도구명','',n=>{if(!n)return;const w=gW();if(!w.tools.includes(n))w.tools.push(n);if(!TM[n])TM[n]={i:'🔧',c:'chip-green',u:''};saveData();renderMain();toast('추가됨')})}
+function addTool(){openEditModal('도구 행 추가','도구명','',n=>{if(!n)return;const w=gW();if(!w.tools.includes(n))w.tools.push(n);if(!TM[n])TM[n]={i:'🔧',c:'chip-green',u:''};saveData();saveCustomTools();renderMain();toast('추가됨')})}
 
 /* ===== NEW WF ===== */
 /* ===== AI 업무 분류 체계 (Collaborate 항목) ===== */
