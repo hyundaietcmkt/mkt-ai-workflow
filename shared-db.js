@@ -1,21 +1,21 @@
 /*
- * shared-db.js v7 FINAL — 현대약품 AI 워크플로우 실시간 공유 저장소
+ * shared-db.js v8 FINAL — 현대약품 AI 워크플로우 실시간 공유 저장소
  *
  * ★ KEY에 jsonbin.io API Key 입력
  *
- * v7 설계 원칙 (단순·확실):
- *   - save: 로컬 데이터를 서버에 그대로 덮어쓰기 (머지 없음)
- *   - sync: save 후 20초간 정지 → 이후 서버 데이터로 UI 갱신
- *   - 삭제/취소 → save → 서버에 즉시 반영 → 되살아남 불가
+ * v8 핵심:
+ *   - 삭제 이력(_del_) 추적 → 삭제한 항목은 절대 부활 안 함
+ *   - save시 서버 신규 항목 머지 → 다른 사람이 추가한 건 보존
+ *   - sync시 신규 항목/신규 신청자만 추가 → 로컬 삭제/취소 유지
  */
 (function(){
 var CFG={
-  KEY:'$2a$10$zz/mxGfqMKbtNMOl24jrKO0dWvL5Y7HhIq4v06zQztZNiUXoMUV16',
+  KEY:'YOUR_API_KEY_HERE',
   BIN_WF:'69df1513aaba882197fe3178',
   BIN_PRI:'69df15a4aaba882197fe33c6',
   URL:'https://api.jsonbin.io/v3/b',
   T:8000,
-  COOLDOWN:20000
+  COOLDOWN:15000
 };
 
 function on(){return CFG.KEY && CFG.KEY!=='YOUR_API_KEY_HERE'}
@@ -30,39 +30,47 @@ function sB(k,id){
   if(k==='priority_items'){CFG.BIN_PRI=id;localStorage.setItem('_bid_pri',id)}
 }
 
-/* ===== API (응답 파싱 확실하게) ===== */
+/* ===== 삭제 이력 ===== */
+function getDelSet(k){
+  try{var a=JSON.parse(localStorage.getItem('_del_'+k)||'[]');var s={};a.forEach(function(id){s[id]=true});return s}catch(e){return{}}
+}
+function addDel(k,id){
+  try{var a=JSON.parse(localStorage.getItem('_del_'+k)||'[]')}catch(e){var a=[]}
+  if(a.indexOf(id)<0) a.push(id);
+  localStorage.setItem('_del_'+k,JSON.stringify(a));
+}
+
+/* ===== API ===== */
 async function cR(b){
-  var r=await fetch(CFG.URL+'/'+b+'/latest',{
-    headers:{'X-Master-Key':CFG.KEY}
-  });
-  if(!r.ok) throw new Error('READ '+r.status);
+  var r=await fetch(CFG.URL+'/'+b+'/latest',{headers:{'X-Master-Key':CFG.KEY}});
+  if(!r.ok) throw new Error(r.status);
   var j=await r.json();
-  // jsonbin v3: {record: ..., metadata: ...}
   return j.record!==undefined ? j.record : j;
 }
-
 async function cW(b,d){
-  var r=await fetch(CFG.URL+'/'+b,{
-    method:'PUT',
-    headers:{'Content-Type':'application/json','X-Master-Key':CFG.KEY},
-    body:JSON.stringify(d)
-  });
-  if(!r.ok) throw new Error('WRITE '+r.status);
+  var r=await fetch(CFG.URL+'/'+b,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':CFG.KEY},body:JSON.stringify(d)});
+  if(!r.ok) throw new Error(r.status);
+}
+async function cC(k,d){
+  var r=await fetch(CFG.URL,{method:'POST',headers:{'Content-Type':'application/json','X-Master-Key':CFG.KEY,'X-Bin-Private':'false','X-Bin-Name':'hyundai-'+k},body:JSON.stringify(d)});
+  var j=await r.json();
+  if(j.metadata&&j.metadata.id){sB(k,j.metadata.id);console.log('Bin created ('+k+'): '+j.metadata.id);return j.metadata.id}
+  return '';
 }
 
-async function cC(k,d){
-  var r=await fetch(CFG.URL,{
-    method:'POST',
-    headers:{'Content-Type':'application/json','X-Master-Key':CFG.KEY,'X-Bin-Private':'false','X-Bin-Name':'hyundai-'+k},
-    body:JSON.stringify(d)
+/* ===== saveMerge: 로컬 + 서버 신규(삭제이력에 없는 것만) ===== */
+function saveMerge(k, local, remote){
+  if(!Array.isArray(local)||!Array.isArray(remote)) return local;
+  var localIds={};
+  local.forEach(function(w){localIds[w.id]=true});
+  var ds=getDelSet(k);
+  var result=local.map(function(w){return JSON.parse(JSON.stringify(w))});
+  remote.forEach(function(w){
+    if(!localIds[w.id] && !ds[w.id]){
+      result.push(JSON.parse(JSON.stringify(w)));
+    }
   });
-  var j=await r.json();
-  if(j.metadata&&j.metadata.id){
-    sB(k,j.metadata.id);
-    console.log('✅ Bin created ('+k+'): '+j.metadata.id);
-    return j.metadata.id;
-  }
-  return '';
+  return result;
 }
 
 /* ===== STATE ===== */
@@ -72,45 +80,82 @@ var st={}, cb={}, lastSaveTime={}, lastSaveHash={};
 function sync(k){
   if(st[k]||!on()) return;
   st[k]=setInterval(async function(){
-    // save 후 쿨다운
     if(lastSaveTime[k] && (Date.now()-lastSaveTime[k] < CFG.COOLDOWN)) return;
     var b=gB(k);
     if(!b) return;
     try{
-      var c=await cR(b);
-      if(!c) return;
-      var serverHash=JSON.stringify(c);
-      var localHash=localStorage.getItem(k);
-      // 서버와 로컬이 다를 때만 갱신
-      if(serverHash!==localHash){
-        // 내가 방금 저장한 것과 같으면 무시 (CDN 지연 대응)
-        if(serverHash===lastSaveHash[k]) return;
-        localStorage.setItem(k,serverHash);
-        if(cb[k]) cb[k](c);
+      var remote=await cR(b);
+      if(!remote||!Array.isArray(remote)) return;
+      var localStr=localStorage.getItem(k);
+      var serverStr=JSON.stringify(remote);
+      if(serverStr===localStr) return;
+      if(serverStr===lastSaveHash[k]) return;
+
+      var local;
+      try{local=JSON.parse(localStr)}catch(e){return}
+      if(!Array.isArray(local)) return;
+
+      var localIds={};
+      local.forEach(function(w){localIds[w.id]=true});
+      var ds=getDelSet(k);
+      var changed=false;
+
+      // 기존 항목: applicants 새 신청자만 추가
+      var result=local.map(function(w){
+        var ri=null;
+        for(var i=0;i<remote.length;i++){if(remote[i].id===w.id){ri=remote[i];break}}
+        if(!ri) return w;
+        var la=w.applicants||[];
+        var ra=ri.applicants||[];
+        var laSet={};
+        la.forEach(function(a){laSet[a]=true});
+        var nw=[];
+        ra.forEach(function(a){if(!laSet[a]) nw.push(a)});
+        if(nw.length>0){
+          var copy=JSON.parse(JSON.stringify(w));
+          copy.applicants=la.concat(nw);
+          changed=true;
+          return copy;
+        }
+        return w;
+      });
+
+      // 서버에만 있는 신규 항목 (삭제 이력 없으면 추가)
+      remote.forEach(function(w){
+        if(!localIds[w.id] && !ds[w.id]){
+          result.push(JSON.parse(JSON.stringify(w)));
+          changed=true;
+        }
+      });
+
+      if(changed){
+        localStorage.setItem(k,JSON.stringify(result));
+        if(cb[k]) cb[k](result);
       }
     }catch(e){}
   }, CFG.T);
 }
 
-/* ===== SAVE (단순 덮어쓰기 — 머지 없음) ===== */
+/* ===== SAVE ===== */
 window.sharedSave=async function(k,d){
-  var dataStr=JSON.stringify(d);
-  localStorage.setItem(k,dataStr);
-  lastSaveHash[k]=dataStr;
+  var ds=JSON.stringify(d);
+  localStorage.setItem(k,ds);
+  lastSaveHash[k]=ds;
   lastSaveTime[k]=Date.now();
-
   if(!on()) return;
   var b=gB(k);
-  if(!b){
-    await cC(k,d);
-    return;
-  }
+  if(!b){await cC(k,d);return}
   try{
-    await cW(b,d);
-    // write 완료 후 쿨다운 갱신
+    var remote=await cR(b);
+    var merged=saveMerge(k,d,remote);
+    await cW(b,merged);
+    var ms=JSON.stringify(merged);
+    localStorage.setItem(k,ms);
+    lastSaveHash[k]=ms;
     lastSaveTime[k]=Date.now();
+    if(ms!==ds && cb[k]) cb[k](merged);
   }catch(e){
-    console.warn('[SharedDB] SAVE 실패:', e.message);
+    try{await cW(b,d);lastSaveTime[k]=Date.now()}catch(e2){}
   }
 };
 
@@ -119,14 +164,7 @@ window.sharedLoad=async function(k,df){
   if(on()){
     var b=gB(k);
     if(b){
-      try{
-        var c=await cR(b);
-        if(c){
-          localStorage.setItem(k,JSON.stringify(c));
-          sync(k);
-          return c;
-        }
-      }catch(e){}
+      try{var c=await cR(b);if(c){localStorage.setItem(k,JSON.stringify(c));sync(k);return c}}catch(e){}
     }
   }
   var l=localStorage.getItem(k);
@@ -135,7 +173,8 @@ window.sharedLoad=async function(k,df){
   return JSON.parse(JSON.stringify(df));
 };
 
+window.sharedMarkDeleted=function(k,id){addDel(k,id)};
 window.sharedOnSync=function(k,c){cb[k]=c};
 window.sharedIsOnline=on;
-console.log('[SharedDB] '+(on()?'✅ Cloud ON (v7 final)':'❌ Offline'));
+console.log('[SharedDB] '+(on()?'✅ Cloud ON (v8)':'❌ Offline'));
 })();

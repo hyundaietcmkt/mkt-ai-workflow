@@ -328,7 +328,7 @@ function submitEdit(){const v=document.getElementById('editModalInput').value.tr
 document.getElementById('editModalInput').addEventListener('keydown',ev=>{if(ev.key==='Enter')submitEdit()});
 
 /* ===== CRUD ===== */
-function delWf(id){const w=W.find(x=>x.id===id);if(!w)return;if(w.author!==currentUser&&currentUser!=='이현우'){toast('등록자 또는 관리자만 삭제할 수 있습니다');return}showConfirm(`<b>"${w.name}"</b> 삭제?`,()=>{W=W.filter(x=>x.id!==id);saveData();if(cId===id){if(W.length)selectWf(W[0].id);else showWelcome()}else{renderList()}toast('삭제됨')})}
+function delWf(id){const w=W.find(x=>x.id===id);if(!w)return;if(w.author!==currentUser&&currentUser!=='이현우'){toast('등록자 또는 관리자만 삭제할 수 있습니다');return}showConfirm(`<b>"${w.name}"</b> 삭제?`,()=>{sharedMarkDeleted('wf_data',id);W=W.filter(x=>x.id!==id);saveData();if(cId===id){if(W.length)selectWf(W[0].id);else showWelcome()}else{renderList()}toast('삭제됨')})}
 function delStep(n){const w=gW();if(w.steps.length<=1){toast('최소 1개 필요');return}showConfirm(`<b>"${n}"</b> 단계 삭제?`,()=>{w.steps=w.steps.filter(s=>s!==n);Object.keys(w.placements).forEach(t=>{w.placements[t]=(w.placements[t]||[]).filter(s=>s!==n)});saveData();renderMain();toast('삭제됨')})}
 function delTool(n){const w=gW();if(w.tools.length<=1){toast('최소 1개 필요');return}showConfirm(`<b>"${n}"</b> 도구 삭제?`,()=>{w.tools=w.tools.filter(t=>t!==n);delete w.placements[n];saveData();renderMain();toast('삭제됨')})}
 function editStep(o){openEditModal('단계 이름 수정','새 이름',o,n=>{const w=gW();const i=w.steps.indexOf(o);if(i===-1)return;w.steps[i]=n;Object.keys(w.placements).forEach(t=>{w.placements[t]=(w.placements[t]||[]).map(s=>s===o?n:s)});saveData();renderMain();toast('변경됨')})}

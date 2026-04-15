@@ -343,7 +343,7 @@ function addItem(){
   document.getElementById('addName').value='';document.getElementById('addAuthor').value='';
   toast('과제 추가됨');
 }
-function removeItem(id){const it=items.find(x=>x.id===id);if(!it)return;if(it.author!==currentUser&&currentUser!==ADMIN){toast('등록자 또는 관리자만 삭제할 수 있습니다');return}items=items.filter(x=>x.id!==id);save();render();toast('삭제됨')}
+function removeItem(id){const it=items.find(x=>x.id===id);if(!it)return;if(it.author!==currentUser&&currentUser!==ADMIN){toast('등록자 또는 관리자만 삭제할 수 있습니다');return}sharedMarkDeleted('priority_items',id);items=items.filter(x=>x.id!==id);save();render();toast('삭제됨')}
 
 /* ===== INIT ===== */
 (async function(){ await load(); render(); })();
