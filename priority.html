@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>현대약품 ETC MKT AI 워크 4사분면 분석</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f1117;--bg2:#181b25;--bg3:#1e2230;--text:#e8eaf0;--text2:#9da3b4;--text3:#636b82;--accent:#6c5ce7;--accent2:#a29bfe;--accent-glow:rgba(108,92,231,.12);--green:#00d2a8;--blue:#4dabf7;--coral:#ff6b81;--amber:#ffc048;--pink:#e84393;--cyan:#0dcaf0;--radius:10px;--radius-sm:6px}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+.top-bar{padding:14px 24px;background:linear-gradient(135deg,rgba(108,92,231,.08),rgba(0,210,168,.04));border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.top-bar h1{font-size:18px;font-weight:700;flex:1}.top-bar h1 span{font-size:12px;font-weight:400;color:var(--text2);margin-left:6px}
+.nav-link{padding:5px 12px;border-radius:14px;font-size:11px;font-weight:500;border:1px solid rgba(255,255,255,.08);color:var(--text2);text-decoration:none;transition:all .2s;cursor:pointer;flex-shrink:0}
+.nav-link:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+
+.page-layout{display:flex;flex:1;overflow:hidden}
+
+/* LEFT PANEL - Items */
+.left-panel{width:300px;background:var(--bg2);border-right:1px solid rgba(255,255,255,.04);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.left-header{padding:14px;border-bottom:1px solid rgba(255,255,255,.04)}
+.left-header h2{font-size:14px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.add-item-btn{padding:4px 10px;border-radius:var(--radius-sm);font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#fff;transition:all .15s}
+.add-item-btn:hover{background:#7c6cf7}
+.left-list{flex:1;overflow-y:auto;padding:8px}
+
+.wf-card{padding:10px 12px;border-radius:8px;margin-bottom:6px;cursor:grab;user-select:none;border:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.02);transition:all .15s;position:relative}
+.wf-card:active{cursor:grabbing;opacity:.8}
+.wf-card:hover{border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
+.wf-card.placed{opacity:.45;border-style:dashed}
+.wf-card .wf-title{font-size:12px;font-weight:600;margin-bottom:4px;padding-right:18px}
+.wf-card .wf-info{font-size:10px;color:var(--text3);display:flex;gap:6px;flex-wrap:wrap}
+.wf-card .wf-info .tag{padding:1px 5px;border-radius:3px;font-size:9px;font-weight:500}
+.tag-cat{background:rgba(255,255,255,.05);color:var(--text2)}
+.wf-card .del-card{position:absolute;top:8px;right:8px;width:16px;height:16px;border-radius:50%;background:transparent;color:var(--text3);font-size:9px;cursor:pointer;display:none;align-items:center;justify-content:center}
+.wf-card:hover .del-card{display:flex}
+.wf-card .del-card:hover{color:var(--coral)}
+
+/* RIGHT - MATRIX */
+.right-panel{flex:1;display:flex;flex-direction:column;overflow:auto;padding:20px 24px 40px}
+
+.matrix-legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;font-size:11px;color:var(--text3);align-items:center}
+.matrix-legend .leg-item{display:flex;align-items:center;gap:5px}
+.leg-dot{width:10px;height:10px;border-radius:3px}
+
+.quadrant-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:0;flex:1;min-height:500px;position:relative;border:1px solid rgba(255,255,255,.08);border-radius:var(--radius)}
+
+/* Axis labels */
+.axis-y{position:absolute;left:-36px;top:50%;transform:rotate(-90deg) translateX(-50%);transform-origin:left center;font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;letter-spacing:.5px}
+.axis-x{position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:600;color:var(--text2);white-space:nowrap;letter-spacing:.5px}
+.axis-y-low{position:absolute;left:-24px;bottom:12px;font-size:9px;color:var(--text3);transform:rotate(-90deg)}
+.axis-y-high{position:absolute;left:-24px;top:12px;font-size:9px;color:var(--text3);transform:rotate(-90deg)}
+.axis-x-low{position:absolute;bottom:-20px;left:12px;font-size:9px;color:var(--text3)}
+.axis-x-high{position:absolute;bottom:-20px;right:12px;font-size:9px;color:var(--text3)}
+
+.quadrant-wrapper{position:relative;margin:0 40px 36px 44px;flex:1;min-height:500px}
+
+.quadrant{padding:12px;position:relative;overflow:hidden;min-height:200px}
+.quadrant.q1{background:rgba(0,210,168,.04);border-bottom:1px solid rgba(255,255,255,.06);border-right:1px solid rgba(255,255,255,.06);border-radius:0 var(--radius) 0 0}
+.quadrant.q2{background:rgba(108,92,231,.04);border-bottom:1px solid rgba(255,255,255,.06);border-radius:var(--radius) 0 0 0}
+.quadrant.q3{background:rgba(255,192,72,.04);border-right:1px solid rgba(255,255,255,.06);border-radius:0 0 var(--radius) 0}
+.quadrant.q4{background:rgba(255,71,87,.04);border-radius:0 0 0 var(--radius)}
+
+.q-label{font-size:11px;font-weight:700;margin-bottom:2px;letter-spacing:.3px}
+.q-sublabel{font-size:9.5px;color:var(--text3);margin-bottom:8px;line-height:1.4}
+.q1 .q-label{color:var(--green)}.q2 .q-label{color:var(--accent2)}.q3 .q-label{color:var(--amber)}.q4 .q-label{color:var(--coral)}
+
+.q-drop-zone{min-height:100px;border-radius:6px;border:1.5px dashed transparent;transition:all .2s;padding:4px}
+.q-drop-zone.drag-over{border-color:var(--accent);background:rgba(108,92,231,.08)}
+
+.placed-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:500;cursor:grab;user-select:none;margin:3px;transition:all .15s;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:var(--text);position:relative;max-width:100%}
+.placed-chip:active{cursor:grabbing;transform:scale(1.04);opacity:.85}
+.placed-chip:hover{background:rgba(255,255,255,.1)}
+.placed-chip .chip-remove{display:none;width:14px;height:14px;border-radius:50%;background:rgba(255,71,87,.2);color:var(--coral);font-size:9px;align-items:center;justify-content:center;cursor:pointer;margin-left:2px;flex-shrink:0}
+.placed-chip:hover .chip-remove{display:flex}
+
+/* SCORING DETAIL */
+.score-section{margin-top:20px;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:16px}
+.score-section h3{font-size:13px;font-weight:600;margin-bottom:10px}
+.score-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.score-table th{text-align:left;padding:6px 8px;font-weight:600;color:var(--text3);border-bottom:1px solid rgba(255,255,255,.06);font-size:10px}
+.score-table td{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--text2)}
+.score-table .criterion{font-weight:600;color:var(--text)}
+.score-table input[type="range"]{width:100%;accent-color:var(--accent)}
+.score-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--accent2);min-width:28px;text-align:center}
+.score-result{margin-top:10px;padding:10px 14px;border-radius:8px;background:var(--accent-glow);border:1px solid rgba(108,92,231,.15);display:flex;gap:20px;align-items:center;font-size:12px}
+.score-result .label{color:var(--text3);font-size:10px}
+.score-result .val{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--accent2)}
+.score-result .quadrant-tag{padding:4px 12px;border-radius:12px;font-size:11px;font-weight:600;margin-left:auto}
+.qt-q1{background:rgba(0,210,168,.12);color:var(--green)}.qt-q2{background:rgba(108,92,231,.12);color:var(--accent2)}.qt-q3{background:rgba(255,192,72,.12);color:var(--amber)}.qt-q4{background:rgba(255,71,87,.12);color:var(--coral)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg2);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:24px;width:90%;max-width:460px;max-height:85vh;overflow-y:auto}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:14px}
+.modal label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px;margin-top:10px}
+.modal input,.modal select{width:100%;padding:8px 10px;border-radius:var(--radius-sm);font-size:12.5px;border:1px solid rgba(255,255,255,.1);background:var(--bg3);color:var(--text);font-family:'Noto Sans KR',sans-serif}
+.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+.btn{padding:6px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--text2);transition:all .2s;display:inline-flex;align-items:center;gap:4px}
+.btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn-primary:hover{background:#7c6cf7}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(50px);background:var(--accent);color:#fff;padding:8px 20px;border-radius:16px;font-size:12px;font-weight:500;z-index:200;opacity:0;transition:all .3s cubic-bezier(.22,1,.36,1);pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:800px){.left-panel{width:240px}}
+@media(max-width:600px){.page-layout{flex-direction:column}.left-panel{width:100%;max-height:200px}.quadrant-wrapper{margin:0 30px 30px 34px}}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>현대약품 ETC MKT AI 워크 4사분면 분석</h1>
+  <a class="nav-link" href="index.html">📊 AI 워크플로우 매트릭스</a>
+  <a class="nav-link" href="catalog.html">📋 AI 도구 카탈로그</a>
+</div>
+
+<div class="page-layout">
+  <!-- LEFT: Item list -->
+  <div class="left-panel">
+    <div class="left-header">
+      <h2>과제 목록 <button class="add-item-btn" onclick="openAddModal()">+ 과제 추가</button></h2>
+      <p style="font-size:10px;color:var(--text3);line-height:1.5">아래 과제를 드래그하여 우측 4사분면에 배치하거나, 하단 점수 평가로 자동 배치하세요.</p>
+    </div>
+    <div class="left-list" id="itemList"></div>
+  </div>
+
+  <!-- RIGHT: Quadrant + Scoring -->
+  <div class="right-panel">
+    <div class="matrix-legend">
+      <div class="leg-item"><div class="leg-dot" style="background:rgba(0,210,168,.3)"></div> Quick Wins (즉시 도입)</div>
+      <div class="leg-item"><div class="leg-dot" style="background:rgba(108,92,231,.3)"></div> Strategic Bets (전략 투자)</div>
+      <div class="leg-item"><div class="leg-dot" style="background:rgba(255,192,72,.3)"></div> Low Hanging Fruits (부수 진행)</div>
+      <div class="leg-item"><div class="leg-dot" style="background:rgba(255,71,87,.3)"></div> Money Pits (도입 보류)</div>
+    </div>
+
+    <div class="quadrant-wrapper">
+      <div class="axis-y">기대 효과 (Impact) →</div>
+      <div class="axis-x">실행 용이성 (Feasibility) →</div>
+      <div class="axis-y-high">높음</div>
+      <div class="axis-y-low">낮음</div>
+      <div class="axis-x-low">어려움</div>
+      <div class="axis-x-high">쉬움</div>
+
+      <div class="quadrant-grid">
+        <div class="quadrant q2">
+          <div class="q-label">Strategic Bets</div>
+          <div class="q-sublabel">효과 高 · 실행 난이도 高<br>중장기 전략 투자 대상</div>
+          <div class="q-drop-zone" id="zone-q2" data-q="q2" ondragover="zoneOver(event)" ondragleave="zoneLeave(event)" ondrop="zoneDrop(event,'q2')"></div>
+        </div>
+        <div class="quadrant q1">
+          <div class="q-label">Quick Wins</div>
+          <div class="q-sublabel">효과 高 · 실행 용이<br>즉시 도입 · 우선 추진</div>
+          <div class="q-drop-zone" id="zone-q1" data-q="q1" ondragover="zoneOver(event)" ondragleave="zoneLeave(event)" ondrop="zoneDrop(event,'q1')"></div>
+        </div>
+        <div class="quadrant q4">
+          <div class="q-label">Money Pits</div>
+          <div class="q-sublabel">효과 低 · 실행 난이도 高<br>도입 보류 / 폐기</div>
+          <div class="q-drop-zone" id="zone-q4" data-q="q4" ondragover="zoneOver(event)" ondragleave="zoneLeave(event)" ondrop="zoneDrop(event,'q4')"></div>
+        </div>
+        <div class="quadrant q3">
+          <div class="q-label">Low Hanging Fruits</div>
+          <div class="q-sublabel">효과 低 · 실행 용이<br>현상 유지 · 부수적 진행</div>
+          <div class="q-drop-zone" id="zone-q3" data-q="q3" ondragover="zoneOver(event)" ondragleave="zoneLeave(event)" ondrop="zoneDrop(event,'q3')"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCORING -->
+    <div class="score-section">
+      <h3>📐 과제별 점수 평가 (선택한 과제의 4대 기준 점수 입력)</h3>
+      <div style="margin-bottom:10px">
+        <label style="font-size:12px;color:var(--text2);margin-bottom:4px;display:block">평가 대상 과제</label>
+        <select id="scoreTarget" style="width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,.1);background:var(--bg3);color:var(--text);font-size:12px;font-family:'Noto Sans KR',sans-serif" onchange="loadScores()">
+          <option value="">— 과제를 선택하세요 —</option>
+        </select>
+      </div>
+      <table class="score-table">
+        <thead><tr><th>평가 기준</th><th style="width:50%">점수</th><th style="width:40px"></th></tr></thead>
+        <tbody>
+          <tr><td class="criterion">① 재무적 임팩트<br><span style="font-size:9px;color:var(--text3);font-weight:400">비용·시간 절감 효과</span></td><td><input type="range" min="1" max="5" value="3" id="s1" oninput="calcScore()"></td><td class="score-val" id="v1">3</td></tr>
+          <tr><td class="criterion">② 프로세스 효율화<br><span style="font-size:9px;color:var(--text3);font-weight:400">업무 속도·생산성 향상</span></td><td><input type="range" min="1" max="5" value="3" id="s2" oninput="calcScore()"></td><td class="score-val" id="v2">3</td></tr>
+          <tr><td class="criterion">③ 비즈니스 혁신성<br><span style="font-size:9px;color:var(--text3);font-weight:400">신규 가치 창출력</span></td><td><input type="range" min="1" max="5" value="3" id="s3" oninput="calcScore()"></td><td class="score-val" id="v3">3</td></tr>
+          <tr><td class="criterion">④ 실행 용이성<br><span style="font-size:9px;color:var(--text3);font-weight:400">기술·운영 접근성, 규제·보안 적합성</span></td><td><input type="range" min="1" max="5" value="3" id="s4" oninput="calcScore()"></td><td class="score-val" id="v4">3</td></tr>
+        </tbody>
+      </table>
+      <div class="score-result" id="scoreResult" style="display:none">
+        <div><div class="label">기대 효과 (①+②+③)</div><div class="val" id="impactVal">-</div></div>
+        <div><div class="label">실행 용이성 (④)</div><div class="val" id="feasVal">-</div></div>
+        <div class="quadrant-tag" id="quadrantTag">-</div>
+        <button class="btn btn-primary" onclick="autoPlace()" style="margin-left:8px;font-size:11px;padding:5px 12px">자동 배치 →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h3>과제 추가</h3>
+    <label>과제명 (워크플로우명)</label>
+    <input id="addName" placeholder="예: OTC 마이녹실 광고 AI 제작">
+    <label>카테고리</label>
+    <input id="addCat" placeholder="예: 마케팅, 콘텐츠 제작" value="마케팅">
+    <label>등록자</label>
+    <input id="addAuthor" placeholder="이름">
+    <div class="modal-actions">
+      <button class="btn" onclick="closeAddModal()">취소</button>
+      <button class="btn btn-primary" onclick="addItem()">추가</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="shared-db.js"></script>
+<script>
+/* ===== DATA ===== */
+let items = [
+  {id:'i1',name:'OTC 마이녹실 광고 AI 초안 생성',cat:'마케팅',author:'관리자',q:null,scores:null},
+  {id:'i2',name:'Rx 심포지엄 초개인화 영상 자동화',cat:'마케팅',author:'관리자',q:null,scores:null},
+  {id:'i3',name:'시장조사 보고서 자동화',cat:'리서치',author:'관리자',q:null,scores:null},
+  {id:'i4',name:'SNS 콘텐츠 대량 제작 파이프라인',cat:'콘텐츠 제작',author:'관리자',q:null,scores:null},
+  {id:'i5',name:'컨퍼런스 기획→마케팅 올인원',cat:'기획',author:'관리자',q:null,scores:null},
+  {id:'i6',name:'데이터 분석 인사이트 리포트',cat:'데이터 분석',author:'관리자',q:null,scores:null},
+  {id:'i7',name:'AI 영상 콘텐츠 제작 (기획~편집)',cat:'콘텐츠 제작',author:'관리자',q:null,scores:null}
+];
+
+let dragId=null;
+const ADMIN='이현우';
+let currentUser=localStorage.getItem('wf_user')||'';
+
+function save(){sharedSave('priority_items',items)}
+async function load(){items = await sharedLoad('priority_items', items); sharedOnSync('priority_items', function(data){ items=data; render(); })}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
+
+/* ===== RENDER ===== */
+function render(){
+  // Left list
+  const list=document.getElementById('itemList');
+  list.innerHTML=items.map(it=>`
+    <div class="wf-card ${it.q?'placed':''}" draggable="true" ondragstart="dragStart(event,'${it.id}')" id="card-${it.id}">
+      <div class="wf-title">${it.name}</div>
+      <div class="wf-info">
+        <span class="tag tag-cat">${it.cat}</span>
+        <span>👤 ${it.author}</span>
+        ${it.q?`<span style="color:var(--accent2)">→ ${getQName(it.q)}</span>`:''}
+      </div>
+      ${(it.author===currentUser||currentUser===ADMIN)?`<span class="del-card" onclick="event.stopPropagation();removeItem('${it.id}')" title="삭제 (등록자 또는 관리자)">✕</span>`:''}
+    </div>`).join('');
+
+  // Quadrant zones
+  ['q1','q2','q3','q4'].forEach(q=>{
+    const zone=document.getElementById('zone-'+q);
+    const inQ=items.filter(it=>it.q===q);
+    zone.innerHTML=inQ.map(it=>`
+      <div class="placed-chip" draggable="true" ondragstart="dragStart(event,'${it.id}')">
+        ${it.name}
+        <span class="chip-remove" onclick="event.stopPropagation();unplace('${it.id}')">✕</span>
+      </div>`).join('');
+  });
+
+  // Score target select
+  const sel=document.getElementById('scoreTarget');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— 과제를 선택하세요 —</option>'+items.map(it=>`<option value="${it.id}">${it.name}</option>`).join('');
+  sel.value=cur;
+}
+
+function getQName(q){return{q1:'Quick Wins',q2:'Strategic Bets',q3:'Low Hanging Fruits',q4:'Money Pits'}[q]||''}
+
+/* ===== DRAG & DROP ===== */
+function dragStart(ev,id){dragId=id;ev.dataTransfer.setData('text/plain',id);ev.dataTransfer.effectAllowed='move'}
+function zoneOver(ev){ev.preventDefault();ev.currentTarget.classList.add('drag-over')}
+function zoneLeave(ev){ev.currentTarget.classList.remove('drag-over')}
+function zoneDrop(ev,q){
+  ev.preventDefault();ev.currentTarget.classList.remove('drag-over');
+  if(!dragId)return;
+  const it=items.find(x=>x.id===dragId);
+  if(it){it.q=q;save();render();toast(`"${it.name}" → ${getQName(q)}`)}
+  dragId=null;
+}
+function unplace(id){const it=items.find(x=>x.id===id);if(it){it.q=null;save();render();toast('배치 해제')}}
+
+/* ===== SCORING ===== */
+function loadScores(){
+  const id=document.getElementById('scoreTarget').value;
+  if(!id){document.getElementById('scoreResult').style.display='none';return}
+  const it=items.find(x=>x.id===id);
+  if(it&&it.scores){
+    document.getElementById('s1').value=it.scores[0];
+    document.getElementById('s2').value=it.scores[1];
+    document.getElementById('s3').value=it.scores[2];
+    document.getElementById('s4').value=it.scores[3];
+  }else{
+    [1,2,3,4].forEach(i=>document.getElementById('s'+i).value=3);
+  }
+  calcScore();
+}
+
+function calcScore(){
+  const s=[1,2,3,4].map(i=>{const v=+document.getElementById('s'+i).value;document.getElementById('v'+i).textContent=v;return v});
+  const impact=s[0]+s[1]+s[2]; // max 15
+  const feas=s[3]; // max 5
+  document.getElementById('impactVal').textContent=impact+'/15';
+  document.getElementById('feasVal').textContent=feas+'/5';
+
+  const impactHigh=impact>=9;
+  const feasHigh=feas>=3;
+  let q,cls,label;
+  if(impactHigh&&feasHigh){q='q1';cls='qt-q1';label='Quick Wins (즉시 도입)'}
+  else if(impactHigh&&!feasHigh){q='q2';cls='qt-q2';label='Strategic Bets (전략 투자)'}
+  else if(!impactHigh&&feasHigh){q='q3';cls='qt-q3';label='Low Hanging Fruits (부수 진행)'}
+  else{q='q4';cls='qt-q4';label='Money Pits (도입 보류)'}
+
+  const tag=document.getElementById('quadrantTag');
+  tag.textContent=label;tag.className='quadrant-tag '+cls;
+
+  document.getElementById('scoreResult').style.display='flex';
+
+  // Save scores
+  const id=document.getElementById('scoreTarget').value;
+  if(id){const it=items.find(x=>x.id===id);if(it){it.scores=s;it._autoQ=q;save()}}
+}
+
+function autoPlace(){
+  const id=document.getElementById('scoreTarget').value;
+  if(!id){toast('과제를 먼저 선택하세요');return}
+  const it=items.find(x=>x.id===id);
+  if(it&&it._autoQ){it.q=it._autoQ;save();render();toast(`"${it.name}" → ${getQName(it.q)} 자동 배치`)}
+}
+
+/* ===== ADD / REMOVE ===== */
+function openAddModal(){document.getElementById('addModal').classList.add('show');document.getElementById('addAuthor').value=currentUser;setTimeout(()=>document.getElementById('addName').focus(),100)}
+function closeAddModal(){document.getElementById('addModal').classList.remove('show')}
+function addItem(){
+  const name=document.getElementById('addName').value.trim();
+  if(!name){toast('이름 입력');return}
+  items.push({id:'i_'+Date.now(),name,cat:document.getElementById('addCat').value.trim()||'기타',author:document.getElementById('addAuthor').value.trim()||'미지정',q:null,scores:null});
+  save();render();closeAddModal();
+  document.getElementById('addName').value='';document.getElementById('addAuthor').value='';
+  toast('과제 추가됨');
+}
+function removeItem(id){const it=items.find(x=>x.id===id);if(!it)return;if(it.author!==currentUser&&currentUser!==ADMIN){toast('등록자 또는 관리자만 삭제할 수 있습니다');return}items=items.filter(x=>x.id!==id);save();render();toast('삭제됨')}
+
+/* ===== INIT ===== */
+(async function(){ await load(); render(); })();
+</script>
+</body>
+</html>
