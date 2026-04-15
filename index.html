@@ -191,12 +191,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <input class="sidebar-search" id="sidebarSearch" placeholder="워크플로우 검색..." oninput="renderList()">
       <div class="sidebar-filters" id="sidebarFilters">
         <button class="sf-btn active" onclick="filterCat('all',this)">전체</button>
-        <button class="sf-btn" onclick="filterCat('기획',this)">기획</button>
-        <button class="sf-btn" onclick="filterCat('마케팅',this)">마케팅</button>
-        <button class="sf-btn" onclick="filterCat('콘텐츠 제작',this)">콘텐츠</button>
-        <button class="sf-btn" onclick="filterCat('리서치',this)">리서치</button>
-        <button class="sf-btn" onclick="filterCat('데이터 분석',this)">데이터</button>
-        <button class="sf-btn" onclick="filterCat('디자인',this)">디자인</button>
+        <button class="sf-btn" onclick="filterCat('콘텐츠 제작',this)">콘텐츠 제작</button>
+        <button class="sf-btn" onclick="filterCat('데이터 분석·리포트',this)">데이터 분석·리포트</button>
+        <button class="sf-btn" onclick="filterCat('기획·전략',this)">기획·전략</button>
+        <button class="sf-btn" onclick="filterCat('기타',this)">기타</button>
       </div>
     </div>
     <div class="sidebar-list" id="sidebarList"></div>
@@ -208,7 +206,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
 <!-- MODALS -->
 <div class="confirm-bar" id="confirmBar"><div class="msg" id="confirmMsg"></div><div style="display:flex;gap:6px"><button class="btn" onclick="cancelConfirm()">취소</button><button class="btn btn-danger" onclick="executeConfirm()">삭제</button></div></div>
-<div class="modal-overlay" id="newWfModal"><div class="modal"><h3>새 워크플로우 등록</h3><label>AI 업무 대분류</label><select id="nwMajor" onchange="updateMidOptions()" style="margin-bottom:2px"><option value="">— 선택하세요 —</option><option value="콘텐츠 제작">콘텐츠 제작</option><option value="데이터 분석·리포트">데이터 분석·리포트</option><option value="기획·전략">기획·전략</option></select><label>AI 업무 중분류</label><select id="nwMid" style="margin-bottom:2px"><option value="">— 대분류를 먼저 선택하세요 —</option></select><label>워크플로우명</label><input id="nwName" placeholder="예: 컨퍼런스 기획 운영"><label>효과 유형 (복수 선택)</label><div class="checkbox-group" id="effectTypes"><label><input type="checkbox" value="신규 업무 실현"> 신규 업무 실현</label><label><input type="checkbox" value="비용 절감"> 비용 절감</label><label><input type="checkbox" value="시간 절감"> 시간 절감</label><label><input type="checkbox" value="산출물 고도화"> 산출물 고도화</label></div><label>시간 절감율</label><input id="nwTime" placeholder="예: 기존 8시간 → 2시간 (75%)"><label>난이도</label><select id="nwDiff"><option>초급</option><option>중급</option><option>고급</option></select><label>결과물 첨부파일 <span style="font-size:10px;color:var(--text3);font-weight:400">(Word, PPT, Excel, 영상, 이미지 등 모든 파일 가능)</span></label><div id="nwFileZone" style="border:1.5px dashed rgba(255,255,255,.1);border-radius:8px;padding:14px;text-align:center;cursor:pointer;transition:all .15s;margin-top:4px" onclick="document.getElementById('nwFileInput').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)';this.style.background='var(--accent-glow)'" ondragleave="this.style.borderColor='rgba(255,255,255,.1)';this.style.background='transparent'" ondrop="event.preventDefault();this.style.borderColor='rgba(255,255,255,.1)';this.style.background='transparent';handleFiles(event.dataTransfer.files)"><div style="font-size:11px;color:var(--text3)">클릭하여 파일 선택 또는 여기에 드래그</div><input type="file" id="nwFileInput" multiple style="display:none" onchange="handleFiles(this.files)"></div><div id="nwFileList" style="margin-top:6px"></div><div class="modal-actions"><button class="btn" onclick="closeNewWfModal()">취소</button><button class="btn btn-primary" onclick="createNewWf()">등록</button></div></div></div>
+<div class="modal-overlay" id="newWfModal"><div class="modal"><h3>새 워크플로우 등록</h3><label>AI 업무 대분류</label><select id="nwMajor" onchange="updateMidOptions()" style="margin-bottom:2px"><option value="">— 선택하세요 —</option><option value="콘텐츠 제작">콘텐츠 제작</option><option value="데이터 분석·리포트">데이터 분석·리포트</option><option value="기획·전략">기획·전략</option><option value="기타">기타</option></select><label>AI 업무 중분류</label><select id="nwMid" style="margin-bottom:2px"><option value="">— 대분류를 먼저 선택하세요 —</option></select><label>워크플로우명</label><input id="nwName" placeholder="예: 컨퍼런스 기획 운영"><label>효과 유형 (복수 선택)</label><div class="checkbox-group" id="effectTypes"><label><input type="checkbox" value="신규 업무 실현"> 신규 업무 실현</label><label><input type="checkbox" value="비용 절감"> 비용 절감</label><label><input type="checkbox" value="시간 절감"> 시간 절감</label><label><input type="checkbox" value="산출물 고도화"> 산출물 고도화</label></div><label>시간 절감율</label><input id="nwTime" placeholder="예: 기존 8시간 → 2시간 (75%)"><label>난이도</label><select id="nwDiff"><option>초급</option><option>중급</option><option>고급</option></select><label>결과물 (OneDrive 링크) <span style="font-size:10px;color:var(--text3);font-weight:400">OneDrive에 파일 업로드 후 공유 링크를 붙여넣으세요</span></label><input id="nwLink" placeholder="https://onedrive.live.com/..." style="margin-top:4px"><div class="modal-actions"><button class="btn" onclick="closeNewWfModal()">취소</button><button class="btn btn-primary" onclick="createNewWf()">등록</button></div></div></div>
 <div class="modal-overlay" id="editModal"><div class="modal"><h3 id="editModalTitle">수정</h3><label id="editModalLabel">새 이름</label><input id="editModalInput"><div class="modal-actions"><button class="btn" onclick="closeEditModal()">취소</button><button class="btn btn-primary" onclick="submitEdit()">저장</button></div></div></div>
 <div class="modal-overlay" id="userModal"><div class="modal"><h3>사용자 이름 설정</h3><label>이름 (등록자명으로 표시됩니다)</label><input id="userInput" placeholder="예: 홍길동"><div class="modal-actions"><button class="btn btn-primary" onclick="saveUser()">확인</button></div></div></div>
 <div class="toast" id="toast"></div>
@@ -287,7 +285,10 @@ function filterCat(c,el){catFilter=c;document.querySelectorAll('.sf-btn').forEac
 function renderList(){
   const q=document.getElementById('sidebarSearch').value.toLowerCase();
   const filtered=W.filter(w=>{
-    if(catFilter!=='all'&&w.category!==catFilter)return false;
+    if(catFilter!=='all'){
+      const wMajor=w.major||w.category||'기타';
+      if(wMajor!==catFilter)return false;
+    }
     if(q&&!w.name.toLowerCase().includes(q)&&!(w.author||'').toLowerCase().includes(q))return false;
     return true;
   }).sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
@@ -367,7 +368,8 @@ function addTool(){openEditModal('도구 행 추가','도구명','',n=>{if(!n)re
 const classMap={
   '콘텐츠 제작':['영상 제작','디자인 제작','문서·브로셔 제작','뉴스 제작','프레젠테이션 제작','교육자료 제작','학술자료 제작'],
   '데이터 분석·리포트':['시장 데이터 분석','실적 분석·예측','수요예측 분석','보고서 작성','회의록 작성'],
-  '기획·전략':['마케팅 전략 수립','행사 기획','신제품 런칭 기획','예산 기획·관리']
+  '기획·전략':['마케팅 전략 수립','행사 기획','신제품 런칭 기획','예산 기획·관리'],
+  '기타':['기타']
 };
 function updateMidOptions(){
   const major=document.getElementById('nwMajor').value;
@@ -376,8 +378,8 @@ function updateMidOptions(){
   mid.innerHTML='<option value="">— 선택하세요 —</option>'+classMap[major].map(m=>`<option value="${m}">${m}</option>`).join('');
 }
 
-function openNewWfModal(){pendingFiles=[];renderFileList();document.getElementById('newWfModal').classList.add('show');setTimeout(()=>document.getElementById('nwMajor').focus(),100)}
-function closeNewWfModal(){pendingFiles=[];renderFileList();document.getElementById('newWfModal').classList.remove('show')}
+function openNewWfModal(){document.getElementById('newWfModal').classList.add('show');setTimeout(()=>document.getElementById('nwMajor').focus(),100)}
+function closeNewWfModal(){document.getElementById('newWfModal').classList.remove('show')}
 
 /* ===== FILE HANDLING ===== */
 let pendingFiles=[];
@@ -429,10 +431,10 @@ function createNewWf(){
   const mid=document.getElementById('nwMid').value;
   const cat=major||'기타';
   const ef=[];document.querySelectorAll('#effectTypes input:checked').forEach(c=>ef.push(c.value));
-  const files=pendingFiles.map(f=>({name:f.name,size:f.size,type:f.type,data:f.data}));
-  const w={id:'wf_'+Date.now(),name,major:major,mid:mid,category:cat,effects:ef,time:document.getElementById('nwTime').value||'-',difficulty:document.getElementById('nwDiff').value,author:currentUser,createdAt:new Date().toISOString().slice(0,10),steps:['STEP 1','STEP 2','STEP 3'],tools:['ChatGPT','Claude','Gemini'],placements:{},files:files};
+  const link=document.getElementById('nwLink').value.trim();
+  const w={id:'wf_'+Date.now(),name,major:major,mid:mid,category:cat,effects:ef,time:document.getElementById('nwTime').value||'-',difficulty:document.getElementById('nwDiff').value,author:currentUser,createdAt:new Date().toISOString().slice(0,10),steps:['STEP 1','STEP 2','STEP 3'],tools:['ChatGPT','Claude','Gemini'],placements:{},link:link};
   W.unshift(w);saveData();cId=w.id;closeNewWfModal();
-  document.getElementById('nwName').value='';document.getElementById('nwTime').value='';document.getElementById('nwFileInput').value='';document.getElementById('nwMajor').value='';document.getElementById('nwMid').innerHTML='<option value="">— 대분류를 먼저 선택하세요 —</option>';
+  document.getElementById('nwName').value='';document.getElementById('nwTime').value='';document.getElementById('nwLink').value='';document.getElementById('nwMajor').value='';document.getElementById('nwMid').innerHTML='<option value="">— 대분류를 먼저 선택하세요 —</option>';
   document.querySelectorAll('#effectTypes input:checked').forEach(c=>c.checked=false);
   renderList();renderMain();toast(`"${name}" 등록 완료!`);
 }
@@ -480,18 +482,14 @@ function renderMain(){
   w.tools.forEach(t=>{const m=gM(t);html+=`<div class="row-header"><div class="tool-icon" style="background:${gB(m.c)}">${m.i}</div><div class="tool-name">${t}</div><span class="del-row" onclick="delTool('${esc(t)}')">✕</span></div>`;w.steps.forEach(s=>{const has=w.placements[t]&&w.placements[t].includes(s);html+=`<div class="matrix-cell" data-tool="${t}" data-step="${s}" ondragover="onO(event)" ondrop="onDr(event)" ondragleave="onL(event)">${has?mC(t,s,m.c):''}</div>`})});
   html+=`</div>`;
 
-  // Attachments
-  const files=w.files||[];
-  if(files.length){
-    html+=`<div class="attach-section"><h5>📎 결과물 첨부파일 (${files.length}개)</h5><div style="display:flex;flex-wrap:wrap;gap:4px">`;
-    files.forEach((f,i)=>{
-      html+=`<span class="file-chip file-dl" onclick="downloadFile('${w.id}',${i})" title="클릭하여 다운로드"><span class="file-icon">${getFileIcon(f.name)}</span> ${f.name} <span style="color:var(--text3)">(${formatSize(f.size)})</span> ⬇</span>`;
-    });
-    html+=`</div></div>`;
+  // OneDrive Link
+  const link=w.link||'';
+  if(link){
+    html+=`<div class="attach-section"><h5>📎 결과물 (OneDrive 링크)</h5><a href="${link}" target="_blank" class="file-dl" style="font-size:12px;display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;background:rgba(77,171,247,.08);border:1px solid rgba(77,171,247,.2);color:var(--blue)">📂 OneDrive에서 열기 →</a></div>`;
   }
 
   // Palette
-  html+=`<div class="tool-palette"><div class="palette-title">🧩 도구 팔레트 — 드래그→배치 · 클릭→사이트 이동</div><div class="palette-grid">`;
+  html+=`<div class="tool-palette"><div class="palette-title">🧩 도구 팔레트 — 드래그→배치 · 클릭→사이트 이동 <span style="opacity:.6;margin-left:6px">※ 일부 도구는 외부 접속 정책 또는 라이선스에 따라 사이트 연결이 제한될 수 있습니다.</span></div><div class="palette-grid">`;
   Object.keys(TM).forEach(t=>{const m=TM[t];html+=`<div class="task-chip palette-chip ${m.c}" draggable="true" ondragstart="onPD(event,'${esc(t)}')" onmousedown="pwd=false" onmouseup="if(!pwd&&'${m.u}')window.open('${m.u}','_blank')" style="cursor:grab">${m.i} ${t}<span class="link-hint">클릭: 사이트</span></div>`});
   html+=`</div></div>`;
 
