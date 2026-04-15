@@ -1,8 +1,10 @@
 /*
- * shared-db.js v4 — 현대약품 AI 워크플로우 실시간 공유 저장소
+ * shared-db.js v5 — 현대약품 AI 워크플로우 실시간 공유 저장소
  *
- * ★ 세팅: jsonbin.io API Key를 아래 KEY에 입력
- * ★ v4: 삭제/취소 시 되살아나는 버그 수정 — "저장하는 쪽이 항상 우선"
+ * ★ KEY에 jsonbin.io API Key 입력
+ * ★ v5 핵심 수정:
+ *   - save 중 sync 잠금 → 삭제/취소가 되살아나는 버그 완전 차단
+ *   - 머지: 저장하는 쪽(local)이 마스터, 다른 사람 신규 추가만 가져옴
  */
 (function(){
 var CFG={
@@ -41,58 +43,37 @@ async function cC(k,d){
   return '';
 }
 
-/* ==========================================================
- *  MERGE v4 — "저장하는 쪽(local)이 마스터"
- *
- *  원칙:
- *  1. local에 있는 항목의 내용은 local이 우선 (방금 수정한 것)
- *  2. local에서 삭제한 항목은 삭제 유지 (서버에서 되살리지 않음)
- *  3. remote에만 새로 추가된 항목(다른 사람이 등록)은 가져옴
- *  4. applicants만 예외: 양쪽 합집합 (수강신청은 합치기)
- * ========================================================== */
-
+/* ===== MERGE v5 — 로컬이 마스터, remote 신규만 추가 ===== */
 function mergeWfData(local, remote){
   if(!Array.isArray(local)||!Array.isArray(remote)) return local;
-
-  // local ID 목록 (이것이 "진실")
   var localIds={};
   local.forEach(function(w){ localIds[w.id]=true });
-
-  // remote 중에서 local에 없는 것 = "다른 사람이 새로 추가한 것"
   var remoteMap={};
   remote.forEach(function(w){ remoteMap[w.id]=w });
 
-  // 결과: local 순서 유지, 각 항목은 local 우선 + applicants만 합침
   var result=[];
+  // local 항목 유지 (삭제한 건 여기 없으므로 자연히 삭제됨)
   local.forEach(function(w){
     var rw=remoteMap[w.id];
     if(rw){
-      // 양쪽에 다 있음 → local 우선, applicants만 합침
       var copy=JSON.parse(JSON.stringify(w));
+      // applicants: local 기준 유지 + remote에만 있는 새 신청자 추가
       var la=w.applicants||[];
       var ra=rw.applicants||[];
-      var merged=[];
       var seen={};
-      // local의 applicants가 "현재 진실" — 취소한 사람은 local에 없음
-      // 하지만 remote에만 있는 새 신청자는 추가해야 함
-      // → local 기준으로, remote에 있지만 local에 없는 사람만 추가
+      var merged=[];
       la.forEach(function(a){seen[a]=true; merged.push(a)});
       ra.forEach(function(a){if(!seen[a]) merged.push(a)});
       copy.applicants=merged;
       result.push(copy);
     } else {
-      // local에만 있음 (새로 등록 등) → 그대로
       result.push(JSON.parse(JSON.stringify(w)));
     }
   });
-
-  // remote에만 있고 local에 없는 것 = 다른 사람이 새로 추가
+  // remote에만 있는 신규 항목 (다른 사람이 추가)
   remote.forEach(function(w){
-    if(!localIds[w.id]){
-      result.push(JSON.parse(JSON.stringify(w)));
-    }
+    if(!localIds[w.id]) result.push(JSON.parse(JSON.stringify(w)));
   });
-
   return result;
 }
 
@@ -108,7 +89,6 @@ function mergePriData(local, remote){
     var rit=remoteMap[it.id];
     if(rit){
       var copy=JSON.parse(JSON.stringify(it));
-      // 배치 안 한 것인데 remote에 배치가 있으면 가져옴
       if(!it.q && rit.q) copy.q=rit.q;
       if(!it.scores && rit.scores) copy.scores=rit.scores;
       if(!it._autoQ && rit._autoQ) copy._autoQ=rit._autoQ;
@@ -129,12 +109,14 @@ function mergeData(k, local, remote){
   return local;
 }
 
-/* ===== SYNC ===== */
-var st={}, cb={}, lh={};
+/* ===== SYNC (save 중 잠금) ===== */
+var st={}, cb={}, lh={}, saving={};
 
 function sync(k){
   if(st[k]||!on()) return;
   st[k]=setInterval(async function(){
+    // ★ save 진행 중이면 sync 건너뛰기 (핵심 수정)
+    if(saving[k]) return;
     var b=gB(k);
     if(!b) return;
     try{
@@ -142,6 +124,8 @@ function sync(k){
       if(!c) return;
       var ch=JSON.stringify(c);
       if(ch!==lh[k]){
+        // ★ sync 도중에 save가 시작됐으면 무시
+        if(saving[k]) return;
         lh[k]=ch;
         localStorage.setItem(k,ch);
         if(cb[k]) cb[k](c);
@@ -150,13 +134,20 @@ function sync(k){
   }, CFG.T);
 }
 
-/* ===== SAVE ===== */
+/* ===== SAVE (잠금 적용) ===== */
 window.sharedSave=async function(k,d){
+  // ★ 잠금 ON — sync가 끼어들지 못하게
+  saving[k]=true;
+
   localStorage.setItem(k,JSON.stringify(d));
-  if(!on()) return;
+  lh[k]=JSON.stringify(d);
+
+  if(!on()){saving[k]=false; return}
+
   var b=gB(k);
   if(!b){
-    b=await cC(k,d);
+    await cC(k,d);
+    saving[k]=false;
   } else {
     try{
       var remote=await cR(b);
@@ -170,6 +161,8 @@ window.sharedSave=async function(k,d){
     }catch(e){
       try{await cW(b,d)}catch(e2){}
     }
+    // ★ 잠금 OFF — 저장 완전히 끝난 후에야 sync 허용
+    saving[k]=false;
   }
 };
 
@@ -197,5 +190,5 @@ window.sharedLoad=async function(k,df){
 
 window.sharedOnSync=function(k,c){cb[k]=c};
 window.sharedIsOnline=on;
-console.log('[SharedDB] '+(on()?'✅ Cloud ON (v4)':'❌ Offline — shared-db.js에 API Key 입력 필요'));
+console.log('[SharedDB] '+(on()?'✅ Cloud ON (v5)':'❌ Offline'));
 })();
