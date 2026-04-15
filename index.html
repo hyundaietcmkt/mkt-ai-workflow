@@ -238,9 +238,20 @@ function loadCustomTools(custom){
     if(!TM[k]) TM[k]=custom[k];
   });
 }
+function getDeletedTools(){
+  try{return JSON.parse(localStorage.getItem('_del_palette')||'[]')}catch(e){return[]}
+}
+function addDeletedTool(name){
+  var list=getDeletedTools();
+  if(list.indexOf(name)<0) list.push(name);
+  localStorage.setItem('_del_palette',JSON.stringify(list));
+}
 function scanToolsFromWorkflows(){
+  var deleted=getDeletedTools();
+  var delSet={};
+  deleted.forEach(function(t){delSet[t]=true});
   W.forEach(function(w){
-    if(w.tools){w.tools.forEach(function(t){if(!TM[t])TM[t]={i:'🔧',c:'chip-green',u:''}})}
+    if(w.tools){w.tools.forEach(function(t){if(!TM[t]&&!delSet[t])TM[t]={i:'🔧',c:'chip-green',u:''}})}
   });
 }
 const TM_DEFAULT=JSON.parse(JSON.stringify(TM));
@@ -372,6 +383,7 @@ function delPaletteTool(name){
   if(currentUser!=='이현우'){toast('관리자만 삭제할 수 있습니다');return}
   showConfirm(`도구 팔레트에서 <b>"${name}"</b>을 삭제하시겠습니까?`,()=>{
     delete TM[name];
+    addDeletedTool(name);
     saveCustomTools();
     // 모든 워크플로우에서 해당 도구 제거
     W.forEach(w=>{
