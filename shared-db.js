@@ -6,7 +6,7 @@
  */
 (function(){
 const CFG={
-  KEY:'YOUR_API_KEY_HERE',
+  KEY:'$2a$10$zz/mxGfqMKbtNMOl24jrKO0dWvL5Y7HhIq4v06zQztZNiUXoMUV16',
   BIN_WF:'',
   BIN_PRI:'',
   URL:'https://api.jsonbin.io/v3/b',
