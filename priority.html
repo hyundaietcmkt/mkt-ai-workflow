@@ -346,8 +346,70 @@ function addItem(){
 }
 function removeItem(id){const it=items.find(x=>x.id===id);if(!it)return;if(it.author!==currentUser&&currentUser!==ADMIN){toast('등록자 또는 관리자만 삭제할 수 있습니다');return}sharedMarkDeleted('priority_items',id);items=items.filter(x=>x.id!==id);save();render();toast('삭제됨')}
 
+/* ===== WF_DATA 연동 — 워크플로우와 과제 목록 자동 동기화 ===== */
+function syncFromWorkflows(workflows){
+  if(!Array.isArray(workflows)) return;
+  var changed=false;
+  // 기존 items를 id→item 맵으로
+  var itemMap={};
+  items.forEach(function(it){itemMap[it.id]=it});
+  // wf_data의 id→wf 맵
+  var wfIds={};
+  workflows.forEach(function(w){wfIds[w.id]=w});
+
+  // 1) wf_data에 있는데 items에 없는 것 → 추가
+  workflows.forEach(function(w){
+    if(!itemMap[w.id]){
+      items.push({
+        id:w.id,
+        name:w.name,
+        cat:w.major||w.category||'기타',
+        author:w.author||'미지정',
+        q:null,
+        scores:null
+      });
+      changed=true;
+    } else {
+      // 이름이 바뀌었으면 갱신
+      if(itemMap[w.id].name!==w.name){
+        itemMap[w.id].name=w.name;
+        changed=true;
+      }
+      if(itemMap[w.id].cat!==(w.major||w.category||'기타')){
+        itemMap[w.id].cat=w.major||w.category||'기타';
+        changed=true;
+      }
+    }
+  });
+
+  // 2) items에 있는데 wf_data에 없는 것 → 삭제 (단, wf_data에서 온 것만. 수동 추가 과제는 유지)
+  // wf_data에서 온 항목: id가 'wf_'로 시작하거나, defaults id(conf, research 등)
+  var defaultIds={conf:1,research:1,sns:1,video:1,data:1};
+  items=items.filter(function(it){
+    // wf_data 유래 항목인지 판별
+    var isFromWf=it.id.indexOf('wf_')===0 || defaultIds[it.id];
+    if(isFromWf && !wfIds[it.id]){
+      changed=true;
+      return false; // 삭제
+    }
+    return true;
+  });
+
+  if(changed){save();render()}
+}
+
 /* ===== INIT ===== */
-(async function(){ await load(); render(); })();
+(async function(){
+  await load();
+  // wf_data 로드하여 과제 목록 동기화
+  var workflows=await sharedLoad('wf_data',[]);
+  syncFromWorkflows(workflows);
+  // wf_data 변경 시 자동 동기화
+  sharedOnSync('wf_data', function(data){
+    if(Array.isArray(data)) syncFromWorkflows(data);
+  });
+  render();
+})();
 </script>
 </body>
 </html>
