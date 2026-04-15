@@ -10,7 +10,7 @@
  */
 (function(){
 var CFG={
-  KEY:'YOUR_API_KEY_HERE',
+  KEY:'$2a$10$zz/mxGfqMKbtNMOl24jrKO0dWvL5Y7HhIq4v06zQztZNiUXoMUV16',
   BIN_WF:'69df1513aaba882197fe3178',
   BIN_PRI:'69df15a4aaba882197fe33c6',
   URL:'https://api.jsonbin.io/v3/b',
