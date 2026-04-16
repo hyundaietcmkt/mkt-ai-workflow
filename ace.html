@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>현대약품 ETC MKT AI 업무 구분표</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f1117;--bg2:#181b25;--bg3:#1e2230;--bg4:#252a3a;--text:#e8eaf0;--text2:#9da3b4;--text3:#636b82;--accent:#6c5ce7;--accent2:#a29bfe;--accent-glow:rgba(108,92,231,.12);--green:#00d2a8;--green-bg:rgba(0,210,168,.08);--green-border:rgba(0,210,168,.25);--blue:#4dabf7;--blue-bg:rgba(77,171,247,.08);--blue-border:rgba(77,171,247,.25);--coral:#ff6b81;--coral-bg:rgba(255,107,129,.08);--amber:#ffc048;--amber-bg:rgba(255,192,72,.08);--pink:#e84393;--cyan:#0dcaf0;--radius:10px;--radius-sm:6px}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+.top-bar{padding:16px 24px;background:linear-gradient(135deg,rgba(108,92,231,.08),rgba(0,210,168,.04));border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:relative}
+.top-bar h1{font-size:19px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-bar h1 span{font-size:12px;font-weight:400;color:var(--text2);margin-left:8px}
+.nav-link{padding:6px 14px;border-radius:16px;font-size:12px;font-weight:500;border:1px solid rgba(255,255,255,.08);color:var(--text2);text-decoration:none;transition:all .2s;cursor:pointer}
+.nav-link:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+
+.container{padding:20px 24px 60px;max-width:1400px;margin:0 auto}
+
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;background:var(--bg2);border-radius:var(--radius);border:1px solid rgba(255,255,255,.04);font-size:12px;color:var(--text2);align-items:center}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.stat-card{padding:10px 16px;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px}
+.stat-card .num{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700}
+
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px;background:var(--bg2);border-radius:var(--radius);overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+thead th{background:var(--bg3);padding:10px 12px;font-weight:600;color:var(--text);text-align:center;border-bottom:1px solid rgba(255,255,255,.08);white-space:nowrap;position:sticky;top:0;z-index:2}
+tbody td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+
+.cat-header td{background:var(--bg3);font-weight:700;font-size:13px;color:var(--accent2);padding:10px 12px;border-bottom:1px solid rgba(108,92,231,.2)}
+
+.td-no{text-align:center;font-family:'JetBrains Mono',monospace;font-weight:500;color:var(--text3);width:40px}
+.td-major{font-weight:600;color:var(--accent2);width:130px}
+.td-task{font-weight:500;width:180px}
+.td-ace{width:160px}
+.td-rr{font-size:11px;color:var(--text2);width:120px}
+.td-desc{font-size:11px;color:var(--text2);line-height:1.5}
+.td-wf{width:200px}
+
+.ace-select{padding:4px 8px;border-radius:var(--radius-sm);font-size:11px;font-weight:500;border:1px solid rgba(255,255,255,.1);background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;cursor:pointer;width:100%}
+.ace-select:focus{outline:none;border-color:var(--accent)}
+.ace-select option{background:var(--bg2);color:var(--text)}
+
+.ace-a{color:var(--green)}
+.ace-c{color:var(--amber)}
+.ace-e{color:var(--coral)}
+
+.wf-badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:500;background:rgba(108,92,231,.1);border:1px solid rgba(108,92,231,.2);color:var(--accent2);margin:2px}
+.wf-badge .wf-author{color:var(--green);font-weight:600}
+
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.filter-btn{padding:5px 12px;border-radius:14px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid rgba(255,255,255,.08);background:transparent;color:var(--text2);transition:all .15s}
+.filter-btn:hover{border-color:rgba(255,255,255,.15);color:var(--text)}
+.filter-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(50px);background:var(--accent);color:#fff;padding:8px 20px;border-radius:16px;font-size:12px;font-weight:500;z-index:200;opacity:0;transition:all .3s cubic-bezier(.22,1,.36,1);pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:800px){
+  .container{padding:12px}
+  table{font-size:11px}
+  .td-desc{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>현대약품 ETC MKT AI 업무 구분표 <span>ACE 분류 · 워크플로우 연동</span></h1>
+  <a class="nav-link" href="index.html">📊 AI 워크플로우 매트릭스</a>
+  <a class="nav-link" href="catalog.html">📋 AI 도구 카탈로그</a>
+  <a class="nav-link" href="priority.html">🎯 AI 워크 4사분면 분석</a>
+  <span style="font-size:9px;color:var(--text3);opacity:.5;position:absolute;bottom:3px;right:24px">Ver 1.00_2026.04.16 · Designed &amp; Developed by ETC MKT 이현우</span>
+</div>
+
+<div class="container">
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> <b>A</b> = Automatic (자동화, AI 단독)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div> <b>C</b> = Collaborate (반자동화, AI+인간)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--coral)"></div> <b>E</b> = Execute (대체불가능, 인간 전담)</div>
+    <div class="legend-item" style="margin-left:auto"><div class="legend-dot" style="background:var(--accent)"></div> 워크플로우 등록됨</div>
+  </div>
+
+  <div class="stats" id="statsBar"></div>
+
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" onclick="setFilter('all',this)">전체</button>
+    <button class="filter-btn" onclick="setFilter('A',this)">A 자동화</button>
+    <button class="filter-btn" onclick="setFilter('C',this)">C 반자동화</button>
+    <button class="filter-btn" onclick="setFilter('E',this)">E 인간전담</button>
+    <button class="filter-btn" onclick="setFilter('wf',this)">📊 워크플로우 등록됨</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>NO</th>
+          <th>대분류</th>
+          <th>업무명 (등록 단위)</th>
+          <th>ACE 구분</th>
+          <th>R&R</th>
+          <th>설명 / 해당 업무 범위</th>
+          <th>워크플로우 등록 현황</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="shared-db.js"></script>
+<script>
+/* ===== 업무 구분 데이터 ===== */
+var DATA=[
+  {cat:'콘텐츠 제작', items:[
+    {no:1,major:'콘텐츠 제작',task:'영상 제작',ace:'C',rr:'MKT, 학술',desc:'심포지엄/Webinar 오프닝 영상, 신제품 VOD, KOL 강연 VOD, 기존 제품 Update VOD 등 모든 영상 콘텐츠 기획·편집'},
+    {no:2,major:'',task:'디자인 제작',ace:'C',rr:'MKT',desc:'초청장, 포스터, 부스 디자인, 광고 시안, 배너 등 행사·홍보용 비주얼 디자인 전반'},
+    {no:3,major:'',task:'문서·브로셔 제작',ace:'C',rr:'MKT, 학술',desc:'제품 브로셔, 복약가이드, 리플렛, DC자료집, 스티커, 판촉물 등 인쇄물·디지털 문서 제작'},
+    {no:4,major:'',task:'뉴스 제작',ace:'C',rr:'MKT, 학술',desc:'Daily News 등'},
+    {no:5,major:'',task:'프레젠테이션 제작',ace:'C',rr:'MKT, 학술',desc:'세미나 발표자료, 경영진 보고 PPT, FCST 보고서, 교육 PT 등 슬라이드 제작·업데이트'},
+    {no:6,major:'',task:'교육자료 제작',ace:'C',rr:'MKT, 학술',desc:'신제품 교육자료, Key message, insert paper, E-Test 문항, MR Expert 강의자료 등 교육용 콘텐츠'},
+    {no:7,major:'',task:'학술자료 제작',ace:'C',rr:'학술',desc:'Clinical Data 검색·정리, 경쟁품 비교자료, back bone 슬라이드, Promotional Material 등 학술 콘텐츠'}
+  ]},
+  {cat:'데이터 분석·리포트', items:[
+    {no:8,major:'데이터 분석·리포트',task:'시장 데이터 분석',ace:'C',rr:'MKT',desc:'IQVIA·UBIST·DDD 등 외부 데이터 가공·분석·시각화, 시장현황 조사, 경쟁사 동향 분석'},
+    {no:9,major:'',task:'실적 분석·예측',ace:'C',rr:'MKT',desc:'전략품목 실적 분석, 매출 예측, Channel별 실적, 전략지표 점검, KPI 대시보드'},
+    {no:10,major:'',task:'수요예측 분석',ace:'C',rr:'MKT, 생산/구매',desc:'수요예측 입력·적중율 분석, 불용재고 점검, 안전재고 산출, 품절 이슈 분석'},
+    {no:11,major:'',task:'보고서 작성',ace:'C',rr:'MKT',desc:'경영진 정례보고, FCST 보고, 결과보고서, 사후보고 등 각종 보고 문서 초안 생성'},
+    {no:12,major:'',task:'회의록 작성',ace:'C',rr:'MKT',desc:'영업 회의, 교육위원회, 수요예측 회의, 제휴사 회의 등 모든 회의 기록 자동 생성'}
+  ]},
+  {cat:'기획·전략', items:[
+    {no:13,major:'기획·전략',task:'마케팅 전략 수립',ace:'C',rr:'MKT',desc:'전략품목 마케팅 전략, Detail Point 개발, KPI 설정, 사업계획 등 전략적 의사결정'},
+    {no:14,major:'',task:'행사 기획',ace:'C',rr:'MKT',desc:'심포지엄·Webinar·학회 런천 등 행사 컨셉 기획, 프로그램 구성, Agency 선정 지원'},
+    {no:15,major:'',task:'신제품 런칭 기획',ace:'C',rr:'MKT, 개발기획',desc:'Master Plan, 3개년 S/F, ABM 기획, 품목목표 설정, 월별 매출 계획 등 신제품 출시 전반'},
+    {no:16,major:'',task:'예산 기획·관리',ace:'C',rr:'MKT',desc:'예산안 수립, 예산 배정 Logic, Incentive 시뮬레이션, 예산 트래킹·리뷰'}
+  ]},
+  {cat:'리서치·정보 수집', items:[
+    {no:17,major:'리서치·정보 수집',task:'학회·행사 정보 수집',ace:'E',rr:'MKT',desc:'국내외 학회 일정 조사, sponsorship 정보, 행사 프로그램 수집'}
+  ]},
+  {cat:'문서·행정', items:[
+    {no:18,major:'문서·행정',task:'신고·신청서 작성',ace:'E',rr:'MKT',desc:'제약협회 사전/사후 신고, 학회 신청서, 해외학술대회 참가지원 서류 등 정형 서류 초안'},
+    {no:19,major:'',task:'계약서·기안서 작성',ace:'E',rr:'MKT',desc:'자문/강연 계약서, CSO 계약서 초안, 각종 기안서 초안 생성'}
+  ]},
+  {cat:'현장·대면 활동', items:[
+    {no:20,major:'현장·대면 활동',task:'KOL 관리·면담',ace:'E',rr:'MKT, 영업',desc:'Speaker development, KOL 개발·동도방문, 약제부 면담, 학회별 임원 면담, 자문/강연 KOL 선정'},
+    {no:21,major:'',task:'행사 현장 운영',ace:'E',rr:'MKT',desc:'심포지엄·Webinar·학회 현장 진행, 부스 스태핑, 학회 간담회 참석'},
+    {no:22,major:'',task:'교육 실시',ace:'E',rr:'MKT, 학술',desc:'신입사원/오프라인 순회 교육, MR Expert 교육, 제약협회 인증시험, 영업부 모닝스터디 등 대면 교육'},
+    {no:23,major:'',task:'Detailing·현장 영업지원',ace:'E',rr:'MKT+영업',desc:'Clinical Data 기반 Detailing, Key message 현장 전달, 제휴사 동도방문, Activity 현장 점검'}
+  ]},
+  {cat:'대면 커뮤니케이션', items:[
+    {no:24,major:'대면 커뮤니케이션',task:'회의 참석·의사결정',ace:'E',rr:'전체',desc:'영업 회의, FCST 회의, 경영진 보고, 교육위원회, 수요예측 회의, BD/제휴사 회의 등 모든 대면 회의'},
+    {no:25,major:'',task:'유관부서·외부 협의',ace:'E',rr:'MKT+유관부서',desc:'상품 발주 협의, 수요예측 생산-구매 회의, CCM 유관부서 협조, 개발본부 협의 등'},
+    {no:26,major:'',task:'고객·제휴사 소통',ace:'E',rr:'MKT+BD',desc:'CCM 고객 대응, 제휴사 커뮤니케이션, SC Meeting, 계약 협상 등 외부 대면 소통'}
+  ]},
+  {cat:'정산·컴플라이언스', items:[
+    {no:27,major:'정산·컴플라이언스',task:'정산 처리',ace:'E',rr:'MKT+영업',desc:'세금계산서, 자문/강연비 정산, CSO 수수료 산출·ERP 정산, 출하가 등록·변경 등'},
+    {no:28,major:'',task:'전자결재·기안 상신',ace:'E',rr:'MKT',desc:'행사/강연/자문 사전기안, 수수료 기안, 예산 조정 기안, 발매기안 등 결재 시스템 처리'},
+    {no:29,major:'',task:'컴플라이언스 점검',ace:'E',rr:'MKT+영업',desc:'증빙자료 확보·CP cross 점검, Promotional Material Review, 계약서 날인·인장 관리'},
+    {no:30,major:'',task:'개인정보·등록 처리',ace:'E',rr:'MKT',desc:'자문인/강연자 신원서류 수집, 공급처·사업자 ERP 등록 등'}
+  ]}
+];
+
+// 중분류→대분류 맵 (워크플로우 매칭용)
+var midToMajor={
+  '영상 제작':'콘텐츠 제작','디자인 제작':'콘텐츠 제작','문서·브로셔 제작':'콘텐츠 제작','뉴스 제작':'콘텐츠 제작',
+  '프레젠테이션 제작':'콘텐츠 제작','교육자료 제작':'콘텐츠 제작','학술자료 제작':'콘텐츠 제작',
+  '시장 데이터 분석':'데이터 분석·리포트','실적 분석·예측':'데이터 분석·리포트','수요예측 분석':'데이터 분석·리포트',
+  '보고서 작성':'데이터 분석·리포트','회의록 작성':'데이터 분석·리포트',
+  '마케팅 전략 수립':'기획·전략','행사 기획':'기획·전략','신제품 런칭 기획':'기획·전략','예산 기획·관리':'기획·전략'
+};
+
+var workflows=[];
+var aceOverrides={};
+var currentFilter='all';
+
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2000)}
+
+function setFilter(f,el){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active')});
+  if(el) el.classList.add('active');
+  renderTable();
+}
+
+function getAce(no){return aceOverrides[no]||null}
+function setAce(no,val){
+  aceOverrides[no]=val;
+  localStorage.setItem('ace_overrides',JSON.stringify(aceOverrides));
+  renderTable();
+  toast('ACE 구분 변경됨');
+}
+
+function findWfMatches(item){
+  var cat=item.major||'';
+  var task=item.task;
+  var matches=[];
+  // 대분류 기반 카테고리 결정
+  var parentCat=cat||midToMajor[task]||'';
+  workflows.forEach(function(w){
+    var wMajor=w.major||w.category||'';
+    var wMid=w.mid||'';
+    // 중분류 매칭
+    if(wMid && wMid===task){
+      matches.push(w);
+    }
+    // 대분류만 매칭 (중분류 없는 경우)
+    else if(!wMid && wMajor===parentCat){
+      matches.push(w);
+    }
+  });
+  return matches;
+}
+
+function aceLabel(ace){
+  if(ace==='A') return '<span class="ace-a">A · Automatic</span>';
+  if(ace==='C') return '<span class="ace-c">C · Collaborate</span>';
+  if(ace==='E') return '<span class="ace-e">E · Execute</span>';
+  return ace;
+}
+
+function renderStats(){
+  var total=0, cntA=0, cntC=0, cntE=0, cntWf=0;
+  DATA.forEach(function(cat){
+    cat.items.forEach(function(item){
+      total++;
+      var ace=getAce(item.no)||item.ace;
+      if(ace==='A') cntA++;
+      if(ace==='C') cntC++;
+      if(ace==='E') cntE++;
+      if(findWfMatches(item).length>0) cntWf++;
+    });
+  });
+  document.getElementById('statsBar').innerHTML=
+    '<div class="stat-card"><span class="num" style="color:var(--text)">'+total+'</span> 전체 업무</div>'+
+    '<div class="stat-card"><span class="num" style="color:var(--green)">'+cntA+'</span> Automatic</div>'+
+    '<div class="stat-card"><span class="num" style="color:var(--amber)">'+cntC+'</span> Collaborate</div>'+
+    '<div class="stat-card"><span class="num" style="color:var(--coral)">'+cntE+'</span> Execute</div>'+
+    '<div class="stat-card"><span class="num" style="color:var(--accent2)">'+cntWf+'</span> 워크플로우 등록</div>';
+}
+
+function renderTable(){
+  var html='';
+  DATA.forEach(function(cat){
+    var catItems=cat.items.filter(function(item){
+      var ace=getAce(item.no)||item.ace;
+      if(currentFilter==='A' && ace!=='A') return false;
+      if(currentFilter==='C' && ace!=='C') return false;
+      if(currentFilter==='E' && ace!=='E') return false;
+      if(currentFilter==='wf' && findWfMatches(item).length===0) return false;
+      return true;
+    });
+    if(catItems.length===0) return;
+
+    html+='<tr class="cat-header"><td colspan="7">'+cat.cat+'</td></tr>';
+    catItems.forEach(function(item){
+      var ace=getAce(item.no)||item.ace;
+      var matches=findWfMatches(item);
+      var wfHtml='';
+      if(matches.length>0){
+        matches.forEach(function(w){
+          wfHtml+='<span class="wf-badge">📊 '+w.name+' <span class="wf-author">by '+(w.author||'미지정')+'</span></span>';
+        });
+      } else {
+        wfHtml='<span style="color:var(--text3);font-size:10px">—</span>';
+      }
+
+      var aceColor=ace==='A'?'var(--green)':ace==='C'?'var(--amber)':'var(--coral)';
+      var rowBorder='border-left:3px solid '+aceColor;
+
+      html+='<tr style="'+rowBorder+'">';
+      html+='<td class="td-no">'+item.no+'</td>';
+      html+='<td class="td-major">'+item.major+'</td>';
+      html+='<td class="td-task">'+item.task+'</td>';
+      html+='<td class="td-ace"><select class="ace-select" onchange="setAce('+item.no+',this.value)" style="color:'+aceColor+'">';
+      html+='<option value="A" '+(ace==='A'?'selected':'')+' style="color:var(--green)">A · Automatic (자동화)</option>';
+      html+='<option value="C" '+(ace==='C'?'selected':'')+' style="color:var(--amber)">C · Collaborate (반자동화)</option>';
+      html+='<option value="E" '+(ace==='E'?'selected':'')+' style="color:var(--coral)">E · Execute (인간전담)</option>';
+      html+='</select></td>';
+      html+='<td class="td-rr">'+item.rr+'</td>';
+      html+='<td class="td-desc">'+item.desc+'</td>';
+      html+='<td class="td-wf">'+wfHtml+'</td>';
+      html+='</tr>';
+    });
+  });
+  document.getElementById('tableBody').innerHTML=html;
+  renderStats();
+}
+
+/* ===== INIT ===== */
+(async function(){
+  // ACE 오버라이드 로드
+  try{aceOverrides=JSON.parse(localStorage.getItem('ace_overrides')||'{}')}catch(e){aceOverrides={}}
+  // 워크플로우 데이터 로드
+  workflows=await sharedLoad('wf_data',[]);
+  sharedOnSync('wf_data',function(data){if(Array.isArray(data)){workflows=data;renderTable()}});
+  renderTable();
+})();
+</script>
+</body>
+</html>
