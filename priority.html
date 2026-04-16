@@ -123,8 +123,8 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
   <!-- LEFT: Item list -->
   <div class="left-panel">
     <div class="left-header">
-      <h2>과제 목록 <button class="add-item-btn" onclick="openAddModal()">+ 과제 추가</button></h2>
-      <p style="font-size:10px;color:var(--text3);line-height:1.5">아래 과제를 드래그하여 우측 4사분면에 배치하거나, 하단 점수 평가로 자동 배치하세요.</p>
+      <h2>워크플로우 목록</h2>
+      <p style="font-size:10px;color:var(--text3);line-height:1.5">아래 워크플로우를 드래그하여 우측 4사분면에 배치하거나, 하단 점수 평가로 자동 배치하세요.</p>
     </div>
     <div class="left-list" id="itemList"></div>
   </div>
@@ -172,11 +172,11 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
     <!-- SCORING -->
     <div class="score-section">
-      <h3>📐 과제별 점수 평가 (선택한 과제의 4대 기준 점수 입력)</h3>
+      <h3>📐 워크플로우별 점수 평가 (선택한 워크플로우의 4대 기준 점수 입력)</h3>
       <div style="margin-bottom:10px">
         <label style="font-size:12px;color:var(--text2);margin-bottom:4px;display:block">평가 대상 과제</label>
         <select id="scoreTarget" style="width:100%;padding:8px;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,.1);background:var(--bg3);color:var(--text);font-size:12px;font-family:'Noto Sans KR',sans-serif" onchange="loadScores()">
-          <option value="">— 과제를 선택하세요 —</option>
+          <option value="">— 워크플로우를 선택하세요 —</option>
         </select>
       </div>
       <table class="score-table">
@@ -267,7 +267,7 @@ function render(){
   // Score target select
   const sel=document.getElementById('scoreTarget');
   const cur=sel.value;
-  sel.innerHTML='<option value="">— 과제를 선택하세요 —</option>'+items.map(it=>`<option value="${it.id}">${it.name}</option>`).join('');
+  sel.innerHTML='<option value="">— 워크플로우를 선택하세요 —</option>'+items.map(it=>`<option value="${it.id}">${it.name}</option>`).join('');
   sel.value=cur;
 }
 
@@ -329,7 +329,7 @@ function calcScore(){
 
 function autoPlace(){
   const id=document.getElementById('scoreTarget').value;
-  if(!id){toast('과제를 먼저 선택하세요');return}
+  if(!id){toast('워크플로우를 먼저 선택하세요');return}
   const it=items.find(x=>x.id===id);
   if(it&&it._autoQ){it.q=it._autoQ;save();render();toast(`"${it.name}" → ${getQName(it.q)} 자동 배치`)}
 }
