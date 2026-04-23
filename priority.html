@@ -54,17 +54,18 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .axis-x-low{position:absolute;bottom:-20px;left:12px;font-size:9px;color:var(--text3)}
 .axis-x-high{position:absolute;bottom:-20px;right:12px;font-size:9px;color:var(--text3)}
 
-.quadrant-wrapper{position:relative;margin:0 40px 36px 44px;flex:1;min-height:500px}
+.quadrant-wrapper{position:relative;margin:36px 40px 40px 44px;flex:1;min-height:500px}
 
-.quadrant{padding:12px;position:relative;overflow:hidden;min-height:200px}
-.quadrant.q1{background:rgba(0,210,168,.04);border-bottom:1px solid rgba(255,255,255,.06);border-right:1px solid rgba(255,255,255,.06);border-radius:0 var(--radius) 0 0}
-.quadrant.q2{background:rgba(108,92,231,.04);border-bottom:1px solid rgba(255,255,255,.06);border-radius:var(--radius) 0 0 0}
-.quadrant.q3{background:rgba(255,192,72,.04);border-right:1px solid rgba(255,255,255,.06);border-radius:0 0 var(--radius) 0}
-.quadrant.q4{background:rgba(255,71,87,.04);border-radius:0 0 0 var(--radius)}
+.quadrant{padding:6px;position:relative;overflow:hidden;min-height:200px}
 
-.q-label{font-size:11px;font-weight:700;margin-bottom:2px;letter-spacing:.3px}
-.q-sublabel{font-size:9.5px;color:var(--text3);margin-bottom:8px;line-height:1.4}
-.q1 .q-label{color:var(--green)}.q2 .q-label{color:var(--accent2)}.q3 .q-label{color:var(--amber)}.q4 .q-label{color:var(--coral)}
+.q-corner{position:absolute;z-index:3;display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:6px;background:rgba(15,17,23,.85);border:1px solid rgba(255,255,255,.06);backdrop-filter:blur(4px);white-space:nowrap}
+.q-corner-lt{top:-32px;left:0}
+.q-corner-rt{top:-32px;right:0}
+.q-corner-lb{bottom:-32px;left:0}
+.q-corner-rb{bottom:-32px;right:0}
+.q-corner-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.q-corner-name{font-size:11px;font-weight:700;letter-spacing:.3px}
+.q-corner-desc{font-size:9px;color:var(--text3);margin-left:4px}
 
 .q-drop-zone{min-height:100px;border-radius:6px;border:1.5px dashed transparent;transition:all .2s;padding:4px}
 .q-drop-zone.drag-over{border-color:var(--accent);background:rgba(108,92,231,.08)}
@@ -153,25 +154,23 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <div class="axis-x-low">낮음</div>
       <div class="axis-x-high">높음</div>
 
+      <!-- 4사분면 외부 코너 라벨 -->
+      <div class="q-corner q-corner-lt"><span class="q-corner-dot" style="background:var(--amber)"></span><span class="q-corner-name" style="color:var(--amber)">Low Hanging Fruits</span><span class="q-corner-desc">효과 低 · 실행 용이 · 부수적 진행</span></div>
+      <div class="q-corner q-corner-rt"><span class="q-corner-dot" style="background:var(--green)"></span><span class="q-corner-name" style="color:var(--green)">Quick Wins</span><span class="q-corner-desc">효과 高 · 실행 용이 · 즉시 도입</span></div>
+      <div class="q-corner q-corner-lb"><span class="q-corner-dot" style="background:var(--coral)"></span><span class="q-corner-name" style="color:var(--coral)">Money Pits</span><span class="q-corner-desc">효과 低 · 실행 난이도 高 · 도입 보류</span></div>
+      <div class="q-corner q-corner-rb"><span class="q-corner-dot" style="background:var(--accent2)"></span><span class="q-corner-name" style="color:var(--accent2)">Strategic Bets</span><span class="q-corner-desc">효과 高 · 실행 난이도 高 · 전략 투자</span></div>
+
       <div class="quadrant-grid">
         <div class="quadrant q3" style="background:rgba(255,192,72,.04);border-bottom:1px solid rgba(255,255,255,.06);border-right:1px solid rgba(255,255,255,.06);border-radius:var(--radius) 0 0 0">
-          <div class="q-label">Low Hanging Fruits</div>
-          <div class="q-sublabel">효과 低 · 실행 용이<br>현상 유지 · 부수적 진행</div>
           <div class="q-drop-zone" id="zone-q3" data-q="q3" ondragover="zoneOver(event)" ondragleave="zoneLeave(event)" ondrop="zoneDrop(event,'q3')"></div>
         </div>
         <div class="quadrant q1" style="background:rgba(0,210,168,.04);border-bottom:1px solid rgba(255,255,255,.06);border-radius:0 var(--radius) 0 0">
-          <div class="q-label">Quick Wins</div>
-          <div class="q-sublabel">효과 高 · 실행 용이<br>즉시 도입 · 우선 추진</div>
           <div class="q-drop-zone" id="zone-q1" data-q="q1" ondragover="zoneOver(event)" ondragleave="zoneLeave(event)" ondrop="zoneDrop(event,'q1')"></div>
         </div>
         <div class="quadrant q4" style="background:rgba(255,71,87,.04);border-right:1px solid rgba(255,255,255,.06);border-radius:0 0 0 var(--radius)">
-          <div class="q-label">Money Pits</div>
-          <div class="q-sublabel">효과 低 · 실행 난이도 高<br>도입 보류 / 폐기</div>
           <div class="q-drop-zone" id="zone-q4" data-q="q4" ondragover="zoneOver(event)" ondragleave="zoneLeave(event)" ondrop="zoneDrop(event,'q4')"></div>
         </div>
         <div class="quadrant q2" style="background:rgba(108,92,231,.04);border-radius:0 0 var(--radius) 0">
-          <div class="q-label">Strategic Bets</div>
-          <div class="q-sublabel">효과 高 · 실행 난이도 高<br>중장기 전략 투자 대상</div>
           <div class="q-drop-zone" id="zone-q2" data-q="q2" ondragover="zoneOver(event)" ondragleave="zoneLeave(event)" ondrop="zoneDrop(event,'q2')"></div>
         </div>
       </div>
