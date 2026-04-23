@@ -69,11 +69,18 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .q-drop-zone{min-height:100px;border-radius:6px;border:1.5px dashed transparent;transition:all .2s;padding:4px}
 .q-drop-zone.drag-over{border-color:var(--accent);background:rgba(108,92,231,.08)}
 
-.placed-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:500;cursor:grab;user-select:none;margin:3px;transition:all .15s;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:var(--text);position:relative;max-width:100%}
+.placed-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:500;cursor:grab;user-select:none;margin:3px;transition:all .15s;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:var(--text);position:relative;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .placed-chip:active{cursor:grabbing;transform:scale(1.04);opacity:.85}
 .placed-chip:hover{background:rgba(255,255,255,.1)}
 .placed-chip .chip-remove{display:none;width:14px;height:14px;border-radius:50%;background:rgba(255,71,87,.2);color:var(--coral);font-size:9px;align-items:center;justify-content:center;cursor:pointer;margin-left:2px;flex-shrink:0}
 .placed-chip:hover .chip-remove{display:flex}
+
+.pos-chip{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:var(--text);cursor:default;transform:translate(-50%,-50%);white-space:nowrap;transition:all .15s;z-index:2}
+.pos-chip:hover{background:rgba(255,255,255,.15);z-index:5;transform:translate(-50%,-50%) scale(1.05)}
+.pos-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.pos-name{max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.pos-remove{display:none;width:12px;height:12px;border-radius:50%;background:rgba(255,71,87,.2);color:var(--coral);font-size:8px;align-items:center;justify-content:center;cursor:pointer;margin-left:2px;flex-shrink:0}
+.pos-chip:hover .pos-remove{display:flex}
 
 /* SCORING DETAIL */
 .score-section{margin-top:20px;background:var(--bg2);border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:16px}
@@ -139,33 +146,33 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     </div>
 
     <div class="quadrant-wrapper">
-      <div class="axis-y">기대 효과 (Impact) →</div>
-      <div class="axis-x">실행 용이성 (Feasibility) →</div>
-      <div class="axis-y-high">높음</div>
-      <div class="axis-y-low">낮음</div>
-      <div class="axis-x-low">어려움</div>
-      <div class="axis-x-high">쉬움</div>
+      <div class="axis-y">실행 용이성 (Feasibility) →</div>
+      <div class="axis-x">기대 효과 (Impact) →</div>
+      <div class="axis-y-high">쉬움</div>
+      <div class="axis-y-low">어려움</div>
+      <div class="axis-x-low">낮음</div>
+      <div class="axis-x-high">높음</div>
 
       <div class="quadrant-grid">
-        <div class="quadrant q2">
-          <div class="q-label">Strategic Bets</div>
-          <div class="q-sublabel">효과 高 · 실행 난이도 高<br>중장기 전략 투자 대상</div>
-          <div class="q-drop-zone" id="zone-q2" data-q="q2" ondragover="zoneOver(event)" ondragleave="zoneLeave(event)" ondrop="zoneDrop(event,'q2')"></div>
+        <div class="quadrant q3" style="background:rgba(255,192,72,.04);border-bottom:1px solid rgba(255,255,255,.06);border-right:1px solid rgba(255,255,255,.06);border-radius:var(--radius) 0 0 0">
+          <div class="q-label">Low Hanging Fruits</div>
+          <div class="q-sublabel">효과 低 · 실행 용이<br>현상 유지 · 부수적 진행</div>
+          <div class="q-drop-zone" id="zone-q3" data-q="q3" ondragover="zoneOver(event)" ondragleave="zoneLeave(event)" ondrop="zoneDrop(event,'q3')"></div>
         </div>
-        <div class="quadrant q1">
+        <div class="quadrant q1" style="background:rgba(0,210,168,.04);border-bottom:1px solid rgba(255,255,255,.06);border-radius:0 var(--radius) 0 0">
           <div class="q-label">Quick Wins</div>
           <div class="q-sublabel">효과 高 · 실행 용이<br>즉시 도입 · 우선 추진</div>
           <div class="q-drop-zone" id="zone-q1" data-q="q1" ondragover="zoneOver(event)" ondragleave="zoneLeave(event)" ondrop="zoneDrop(event,'q1')"></div>
         </div>
-        <div class="quadrant q4">
+        <div class="quadrant q4" style="background:rgba(255,71,87,.04);border-right:1px solid rgba(255,255,255,.06);border-radius:0 0 0 var(--radius)">
           <div class="q-label">Money Pits</div>
           <div class="q-sublabel">효과 低 · 실행 난이도 高<br>도입 보류 / 폐기</div>
           <div class="q-drop-zone" id="zone-q4" data-q="q4" ondragover="zoneOver(event)" ondragleave="zoneLeave(event)" ondrop="zoneDrop(event,'q4')"></div>
         </div>
-        <div class="quadrant q3">
-          <div class="q-label">Low Hanging Fruits</div>
-          <div class="q-sublabel">효과 低 · 실행 용이<br>현상 유지 · 부수적 진행</div>
-          <div class="q-drop-zone" id="zone-q3" data-q="q3" ondragover="zoneOver(event)" ondragleave="zoneLeave(event)" ondrop="zoneDrop(event,'q3')"></div>
+        <div class="quadrant q2" style="background:rgba(108,92,231,.04);border-radius:0 0 var(--radius) 0">
+          <div class="q-label">Strategic Bets</div>
+          <div class="q-sublabel">효과 高 · 실행 난이도 高<br>중장기 전략 투자 대상</div>
+          <div class="q-drop-zone" id="zone-q2" data-q="q2" ondragover="zoneOver(event)" ondragleave="zoneLeave(event)" ondrop="zoneDrop(event,'q2')"></div>
         </div>
       </div>
     </div>
@@ -182,10 +189,10 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
       <table class="score-table">
         <thead><tr><th>평가 기준</th><th style="width:50%">점수</th><th style="width:40px"></th></tr></thead>
         <tbody>
-          <tr><td class="criterion">① 재무적 임팩트<br><span style="font-size:9px;color:var(--text3);font-weight:400">비용·시간 절감 효과</span></td><td><input type="range" min="1" max="5" value="3" id="s1" oninput="calcScore()"></td><td class="score-val" id="v1">3</td></tr>
-          <tr><td class="criterion">② 프로세스 효율화<br><span style="font-size:9px;color:var(--text3);font-weight:400">업무 속도·생산성 향상</span></td><td><input type="range" min="1" max="5" value="3" id="s2" oninput="calcScore()"></td><td class="score-val" id="v2">3</td></tr>
-          <tr><td class="criterion">③ 비즈니스 혁신성<br><span style="font-size:9px;color:var(--text3);font-weight:400">신규 가치 창출력</span></td><td><input type="range" min="1" max="5" value="3" id="s3" oninput="calcScore()"></td><td class="score-val" id="v3">3</td></tr>
-          <tr><td class="criterion">④ 실행 용이성<br><span style="font-size:9px;color:var(--text3);font-weight:400">기술·운영 접근성, 규제·보안 적합성</span></td><td><input type="range" min="1" max="5" value="3" id="s4" oninput="calcScore()"></td><td class="score-val" id="v4">3</td></tr>
+          <tr><td class="criterion">① 재무적 임팩트<br><span style="font-size:9px;color:var(--text3);font-weight:400">비용 절감 효과</span></td><td><input type="range" min="1" max="10" value="5" id="s1" oninput="calcScore()"></td><td class="score-val" id="v1">5</td></tr>
+          <tr><td class="criterion">② 프로세스 효율화<br><span style="font-size:9px;color:var(--text3);font-weight:400">업무 속도·생산성 향상</span></td><td><input type="range" min="1" max="10" value="5" id="s2" oninput="calcScore()"></td><td class="score-val" id="v2">5</td></tr>
+          <tr><td class="criterion">③ 비즈니스 혁신성<br><span style="font-size:9px;color:var(--text3);font-weight:400">신규 가치 창출력</span></td><td><input type="range" min="1" max="10" value="5" id="s3" oninput="calcScore()"></td><td class="score-val" id="v3">5</td></tr>
+          <tr><td class="criterion">④ 실행 용이성<br><span style="font-size:9px;color:var(--text3);font-weight:400">기술·운영 접근성, 규제·보안 적합성</span></td><td><input type="range" min="1" max="10" value="5" id="s4" oninput="calcScore()"></td><td class="score-val" id="v4">5</td></tr>
         </tbody>
       </table>
       <div class="score-result" id="scoreResult" style="display:none">
@@ -253,16 +260,44 @@ function render(){
       ${(it.author===currentUser||currentUser===ADMIN)?`<span class="del-card" onclick="event.stopPropagation();removeItem('${it.id}')" title="삭제 (등록자 또는 관리자)">✕</span>`:''}
     </div>`).join('');
 
-  // Quadrant zones
+  // Quadrant zones - keep drop zones for drag&drop
   ['q1','q2','q3','q4'].forEach(q=>{
     const zone=document.getElementById('zone-'+q);
-    const inQ=items.filter(it=>it.q===q);
-    zone.innerHTML=inQ.map(it=>`
-      <div class="placed-chip" draggable="true" ondragstart="dragStart(event,'${it.id}')">
-        ${it.name}
+    // 점수 없이 드래그로만 배치된 항목
+    const inQ=items.filter(it=>it.q===q && !it._impactPct);
+    zone.innerHTML=inQ.map(it=>{
+      const shortName=it.name.length>18?it.name.substring(0,18)+'…':it.name;
+      return `<div class="placed-chip" draggable="true" ondragstart="dragStart(event,'${it.id}')" title="${it.name}">
+        ${shortName}
         <span class="chip-remove" onclick="event.stopPropagation();unplace('${it.id}')">✕</span>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   });
+
+  // 점수 기반 위치 배치 (absolute positioning on quadrant-grid)
+  let posLayer=document.getElementById('positionedLayer');
+  if(!posLayer){
+    posLayer=document.createElement('div');
+    posLayer.id='positionedLayer';
+    posLayer.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:1';
+    document.querySelector('.quadrant-grid').appendChild(posLayer);
+  }
+  const scored=items.filter(it=>it.q && it._impactPct!==undefined && it._impactPct!==null);
+  posLayer.innerHTML=scored.map(it=>{
+    // X축 = Impact(기대효과): 높을수록 오른쪽 → left = impactPct*100%
+    // Y축 = Feasibility(실행용이성): 높을수록 위 → top = 100% - feasPct*100%
+    const ip=it._impactPct||0;
+    const fp=it._feasPct||0;
+    const left=(5+ip*90).toFixed(1);
+    const top=(5+(1-fp)*90).toFixed(1);
+    const shortName=it.name.length>15?it.name.substring(0,15)+'…':it.name;
+    const qColor=it.q==='q1'?'var(--green)':it.q==='q2'?'var(--accent2)':it.q==='q3'?'var(--amber)':'var(--coral)';
+    return `<div class="pos-chip" style="position:absolute;left:${left}%;top:${top}%;pointer-events:auto" title="${it.name}&#10;Impact: ${(ip*30).toFixed(0)}/30 | Feas: ${(fp*10).toFixed(0)}/10">
+      <span class="pos-dot" style="background:${qColor}"></span>
+      <span class="pos-name">${shortName}</span>
+      <span class="pos-remove" onclick="event.stopPropagation();unplace('${it.id}')">✕</span>
+    </div>`;
+  }).join('');
 
   // Score target select
   const sel=document.getElementById('scoreTarget');
@@ -297,20 +332,20 @@ function loadScores(){
     document.getElementById('s3').value=it.scores[2];
     document.getElementById('s4').value=it.scores[3];
   }else{
-    [1,2,3,4].forEach(i=>document.getElementById('s'+i).value=3);
+    [1,2,3,4].forEach(i=>document.getElementById('s'+i).value=5);
   }
   calcScore();
 }
 
 function calcScore(){
   const s=[1,2,3,4].map(i=>{const v=+document.getElementById('s'+i).value;document.getElementById('v'+i).textContent=v;return v});
-  const impact=s[0]+s[1]+s[2]; // max 15
-  const feas=s[3]; // max 5
-  document.getElementById('impactVal').textContent=impact+'/15';
-  document.getElementById('feasVal').textContent=feas+'/5';
+  const impact=s[0]+s[1]+s[2]; // max 30
+  const feas=s[3]; // max 10
+  document.getElementById('impactVal').textContent=impact+'/30';
+  document.getElementById('feasVal').textContent=feas+'/10';
 
-  const impactHigh=impact>=9;
-  const feasHigh=feas>=3;
+  const impactHigh=impact>=16;
+  const feasHigh=feas>=6;
   let q,cls,label;
   if(impactHigh&&feasHigh){q='q1';cls='qt-q1';label='Quick Wins (즉시 도입)'}
   else if(impactHigh&&!feasHigh){q='q2';cls='qt-q2';label='Strategic Bets (전략 투자)'}
@@ -322,16 +357,24 @@ function calcScore(){
 
   document.getElementById('scoreResult').style.display='flex';
 
-  // Save scores
+  // Save scores + position data
   const id=document.getElementById('scoreTarget').value;
-  if(id){const it=items.find(x=>x.id===id);if(it){it.scores=s;it._autoQ=q;save()}}
+  if(id){const it=items.find(x=>x.id===id);if(it){it.scores=s;it._autoQ=q;it._impactPct=impact/30;it._feasPct=feas/10;save()}}
 }
 
 function autoPlace(){
   const id=document.getElementById('scoreTarget').value;
   if(!id){toast('워크플로우를 먼저 선택하세요');return}
   const it=items.find(x=>x.id===id);
-  if(it&&it._autoQ){it.q=it._autoQ;save();render();toast(`"${it.name}" → ${getQName(it.q)} 자동 배치`)}
+  if(it&&it._autoQ){
+    it.q=it._autoQ;
+    // 점수 기반 위치 계산
+    if(it.scores){
+      it._impactPct=(it.scores[0]+it.scores[1]+it.scores[2])/30;
+      it._feasPct=it.scores[3]/10;
+    }
+    save();render();toast(`"${it.name}" → ${getQName(it.q)} 자동 배치`);
+  }
 }
 
 /* ===== ADD / REMOVE ===== */
