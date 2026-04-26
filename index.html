@@ -48,9 +48,12 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .wf-item .wf-meta .tag{padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:500}
 .tag-cat{background:rgba(255,255,255,.05);color:var(--text2)}
 .tag-diff{background:var(--amber-bg);color:var(--amber)}
-.wf-item .del-item{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;background:transparent;color:var(--text3);font-size:10px;cursor:pointer;display:none;align-items:center;justify-content:center;border:1px solid transparent;transition:all .15s}
+.wf-item .del-item{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;background:transparent;color:var(--text3);font-size:10px;cursor:pointer;display:none;align-items:center;justify-content:center;border:1px solid transparent;transition:all .15s;z-index:2}
 .wf-item:hover .del-item{display:flex}
 .wf-item .del-item:hover{background:var(--danger-bg);color:var(--danger);border-color:rgba(255,71,87,.2)}
+.wf-item .edit-item{position:absolute;top:10px;right:32px;width:18px;height:18px;border-radius:50%;background:transparent;color:var(--text3);font-size:10px;cursor:pointer;display:none;align-items:center;justify-content:center;border:1px solid transparent;transition:all .15s;z-index:2}
+.wf-item:hover .edit-item{display:flex}
+.wf-item .edit-item:hover{background:var(--accent-glow);color:var(--accent2);border-color:rgba(108,92,231,.3)}
 
 .apply-btn{padding:3px 10px;border-radius:10px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid rgba(0,210,168,.25);background:rgba(0,210,168,.08);color:var(--green);transition:all .15s;margin-top:6px;display:inline-flex;align-items:center;gap:3px}
 .apply-btn:hover{background:rgba(0,210,168,.18);border-color:rgba(0,210,168,.4)}
@@ -226,7 +229,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 
 <!-- MODALS -->
 <div class="confirm-bar" id="confirmBar"><div class="msg" id="confirmMsg"></div><div style="display:flex;gap:6px"><button class="btn" onclick="cancelConfirm()">취소</button><button class="btn btn-danger" onclick="executeConfirm()">삭제</button></div></div>
-<div class="modal-overlay" id="newWfModal"><div class="modal"><h3>새 워크플로우 등록</h3><label>AI 업무 대분류</label><select id="nwMajor" onchange="updateMidOptions()" style="margin-bottom:2px"><option value="">— 선택하세요 —</option><option value="콘텐츠 제작">콘텐츠 제작</option><option value="데이터 분석·리포트">데이터 분석·리포트</option><option value="기획·전략">기획·전략</option><option value="기타">기타</option></select><label>AI 업무 중분류</label><select id="nwMid" style="margin-bottom:2px"><option value="">— 대분류를 먼저 선택하세요 —</option></select><label>워크플로우명</label><input id="nwName" placeholder="예: 컨퍼런스 기획 운영"><label>효과 유형 (복수 선택)</label><div class="checkbox-group" id="effectTypes"><label><input type="checkbox" value="신규 업무 실현"> 신규 업무 실현</label><label><input type="checkbox" value="비용 절감"> 비용 절감</label><label><input type="checkbox" value="시간 절감"> 시간 절감</label><label><input type="checkbox" value="산출물 고도화"> 산출물 고도화</label></div><label>시간 절감율</label><input id="nwTime" placeholder="예: 기존 8시간 → 2시간 (75%)"><label>난이도</label><select id="nwDiff"><option>초급</option><option>중급</option><option>고급</option></select><label>결과물 (OneDrive 링크) <span style="font-size:10px;color:var(--text3);font-weight:400">OneDrive에 파일 업로드 후 공유 링크를 붙여넣으세요</span></label><input id="nwLink" placeholder="https://onedrive.live.com/..." style="margin-top:4px"><div class="modal-actions"><button class="btn" onclick="closeNewWfModal()">취소</button><button class="btn btn-primary" onclick="createNewWf()">등록</button></div></div></div>
+<div class="modal-overlay" id="newWfModal"><div class="modal"><h3 id="nwModalTitle">새 워크플로우 등록</h3><label>AI 업무 대분류</label><select id="nwMajor" onchange="updateMidOptions()" style="margin-bottom:2px"><option value="">— 선택하세요 —</option><option value="콘텐츠 제작">콘텐츠 제작</option><option value="데이터 분석·리포트">데이터 분석·리포트</option><option value="기획·전략">기획·전략</option><option value="기타">기타</option></select><label>AI 업무 중분류</label><select id="nwMid" style="margin-bottom:2px"><option value="">— 대분류를 먼저 선택하세요 —</option></select><label>워크플로우명</label><input id="nwName" placeholder="예: 컨퍼런스 기획 운영"><label>효과 유형 (복수 선택)</label><div class="checkbox-group" id="effectTypes"><label><input type="checkbox" value="신규 업무 실현"> 신규 업무 실현</label><label><input type="checkbox" value="비용 절감"> 비용 절감</label><label><input type="checkbox" value="시간 절감"> 시간 절감</label><label><input type="checkbox" value="산출물 고도화"> 산출물 고도화</label></div><label>시간 절감율</label><input id="nwTime" placeholder="예: 기존 8시간 → 2시간 (75%)"><label>난이도</label><select id="nwDiff"><option>초급</option><option>중급</option><option>고급</option></select><label>결과물 (OneDrive 링크) <span style="font-size:10px;color:var(--text3);font-weight:400">OneDrive에 파일 업로드 후 공유 링크를 붙여넣으세요</span></label><input id="nwLink" placeholder="https://onedrive.live.com/..." style="margin-top:4px"><label>* URL 링크 <span style="font-size:10px;color:var(--text3);font-weight:400">(선택사항) 참고 자료, 외부 페이지 등의 URL을 입력하세요</span></label><input id="nwExtraUrl" placeholder="https://..." style="margin-top:4px"><div class="modal-actions"><button class="btn" onclick="closeNewWfModal()">취소</button><button class="btn btn-primary" id="nwSaveBtn" onclick="createNewWf()">등록</button></div></div></div>
 <div class="modal-overlay" id="editModal"><div class="modal"><h3 id="editModalTitle">수정</h3><label id="editModalLabel">새 이름</label><input id="editModalInput"><div class="modal-actions"><button class="btn" onclick="closeEditModal()">취소</button><button class="btn btn-primary" onclick="submitEdit()">저장</button></div></div></div>
 <div class="modal-overlay" id="userModal"><div class="modal"><h3>사용자 이름 설정</h3><label>이름 (등록자명으로 표시됩니다)</label><input id="userInput" placeholder="예: 홍길동"><div class="modal-actions"><button class="btn btn-primary" onclick="saveUser()">확인</button></div></div></div>
 <div class="toast" id="toast"></div>
@@ -363,7 +366,7 @@ function renderList(){
       </div>
       ${applyBtnHtml}
       ${applicantsHtml}
-      ${(w.author===currentUser||currentUser==='이현우')?`<span class="del-item" onclick="event.stopPropagation();delWf('${w.id}')" title="삭제 (등록자 또는 관리자만 가능)">✕</span>`:''}
+      ${(w.author===currentUser||currentUser==='이현우')?`<span class="edit-item" onclick="event.stopPropagation();editWf('${w.id}')" title="수정 (등록자 또는 관리자만 가능)">✎</span><span class="del-item" onclick="event.stopPropagation();delWf('${w.id}')" title="삭제 (등록자 또는 관리자만 가능)">✕</span>`:''}
     </div>`;
   }).join('');
 }
@@ -467,8 +470,24 @@ function updateMidOptions(){
   mid.innerHTML='<option value="">— 선택하세요 —</option>'+classMap[major].map(m=>`<option value="${m}">${m}</option>`).join('');
 }
 
-function openNewWfModal(){document.getElementById('newWfModal').classList.add('show');setTimeout(()=>document.getElementById('nwMajor').focus(),100)}
-function closeNewWfModal(){document.getElementById('newWfModal').classList.remove('show')}
+function openNewWfModal(){
+  editingWfId=null;
+  document.getElementById('nwModalTitle').textContent='새 워크플로우 등록';
+  document.getElementById('nwSaveBtn').textContent='등록';
+  document.getElementById('nwName').value='';
+  document.getElementById('nwTime').value='';
+  document.getElementById('nwLink').value='';
+  document.getElementById('nwExtraUrl').value='';
+  document.getElementById('nwMajor').value='';
+  document.getElementById('nwMid').innerHTML='<option value="">— 대분류를 먼저 선택하세요 —</option>';
+  document.querySelectorAll('#effectTypes input').forEach(c=>c.checked=false);
+  document.getElementById('newWfModal').classList.add('show');
+  setTimeout(()=>document.getElementById('nwMajor').focus(),100);
+}
+function closeNewWfModal(){
+  editingWfId=null;
+  document.getElementById('newWfModal').classList.remove('show');
+}
 
 /* ===== FILE HANDLING ===== */
 let pendingFiles=[];
@@ -512,6 +531,8 @@ function downloadFile(wfId,fileIdx){
   toast(`${f.name} 다운로드`);
 }
 
+let editingWfId=null;
+
 function createNewWf(){
   const name=document.getElementById('nwName').value.trim();
   if(!name){toast('이름 입력');return}
@@ -521,11 +542,43 @@ function createNewWf(){
   const cat=major||'기타';
   const ef=[];document.querySelectorAll('#effectTypes input:checked').forEach(c=>ef.push(c.value));
   const link=document.getElementById('nwLink').value.trim();
-  const w={id:'wf_'+Date.now(),name,major:major,mid:mid,category:cat,effects:ef,time:document.getElementById('nwTime').value||'-',difficulty:document.getElementById('nwDiff').value,author:currentUser,createdAt:new Date().toISOString().slice(0,10),steps:['STEP 1','STEP 2','STEP 3'],tools:['ChatGPT','Claude','Gemini'],placements:{},link:link};
-  W.unshift(w);saveData();cId=w.id;closeNewWfModal();
-  document.getElementById('nwName').value='';document.getElementById('nwTime').value='';document.getElementById('nwLink').value='';document.getElementById('nwMajor').value='';document.getElementById('nwMid').innerHTML='<option value="">— 대분류를 먼저 선택하세요 —</option>';
-  document.querySelectorAll('#effectTypes input:checked').forEach(c=>c.checked=false);
-  renderList();renderMain();toast(`"${name}" 등록 완료!`);
+  const extraUrl=document.getElementById('nwExtraUrl').value.trim();
+  const time=document.getElementById('nwTime').value||'-';
+  const diff=document.getElementById('nwDiff').value;
+
+  if(editingWfId){
+    // 수정 모드
+    const w=W.find(x=>x.id===editingWfId);
+    if(!w){toast('워크플로우를 찾을 수 없습니다');return}
+    if(w.author!==currentUser&&currentUser!=='이현우'){toast('등록자 또는 관리자만 수정할 수 있습니다');return}
+    w.name=name;w.major=major;w.mid=mid;w.category=cat;w.effects=ef;w.time=time;w.difficulty=diff;w.link=link;w.extraUrl=extraUrl;
+    saveData();closeNewWfModal();renderList();renderMain();toast(`"${name}" 수정 완료!`);
+  } else {
+    // 신규 등록
+    const w={id:'wf_'+Date.now(),name,major:major,mid:mid,category:cat,effects:ef,time:time,difficulty:diff,author:currentUser,createdAt:new Date().toISOString().slice(0,10),steps:['STEP 1','STEP 2','STEP 3'],tools:['ChatGPT','Claude','Gemini'],placements:{},link:link,extraUrl:extraUrl};
+    W.unshift(w);saveData();cId=w.id;closeNewWfModal();
+    renderList();renderMain();toast(`"${name}" 등록 완료!`);
+  }
+}
+
+function editWf(id){
+  const w=W.find(x=>x.id===id);
+  if(!w){toast('워크플로우를 찾을 수 없습니다');return}
+  if(w.author!==currentUser&&currentUser!=='이현우'){toast('등록자 또는 관리자만 수정할 수 있습니다');return}
+
+  editingWfId=id;
+  document.getElementById('nwModalTitle').textContent='워크플로우 수정';
+  document.getElementById('nwSaveBtn').textContent='저장';
+  document.getElementById('nwName').value=w.name||'';
+  document.getElementById('nwMajor').value=w.major||'';
+  updateMidOptions();
+  setTimeout(()=>{document.getElementById('nwMid').value=w.mid||''},50);
+  document.getElementById('nwTime').value=w.time&&w.time!=='-'?w.time:'';
+  document.getElementById('nwDiff').value=w.difficulty||'초급';
+  document.getElementById('nwLink').value=w.link||'';
+  document.getElementById('nwExtraUrl').value=w.extraUrl||'';
+  document.querySelectorAll('#effectTypes input').forEach(c=>{c.checked=(w.effects||[]).includes(c.value)});
+  document.getElementById('newWfModal').classList.add('show');
 }
 
 /* ===== DRAG & DROP ===== */
@@ -575,6 +628,12 @@ function renderMain(){
   const link=w.link||'';
   if(link){
     html+=`<div class="attach-section"><h5>📎 결과물 (OneDrive 링크)</h5><a href="${link}" target="_blank" class="file-dl" style="font-size:12px;display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;background:rgba(77,171,247,.08);border:1px solid rgba(77,171,247,.2);color:var(--blue)">📂 OneDrive에서 열기 →</a></div>`;
+  }
+
+  // Extra URL
+  const extraUrl=w.extraUrl||'';
+  if(extraUrl){
+    html+=`<div class="attach-section"><h5>🔗 참고 URL</h5><a href="${extraUrl}" target="_blank" class="file-dl" style="font-size:12px;display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;background:rgba(108,92,231,.08);border:1px solid rgba(108,92,231,.2);color:var(--accent2);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🌐 ${extraUrl.length>50?extraUrl.substring(0,50)+'…':extraUrl} →</a></div>`;
   }
 
   // Palette
